@@ -1,4 +1,4 @@
-baseurl = "https://huanghaicheng1024.github.io/Rblog"
+baseurl = "https://huanghaicheng1024.github.io/Rblog/"
 publishDir = "docs"
 languageCode = "en-us"
 title = "A Hugo website"
@@ -6,6 +6,8 @@ theme = "hugo-lithium"
 googleAnalytics = ""
 disqusShortname = ""
 ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
+draft: false # if set to true, changes will not be published
+enableEmoji = true
 
 [permalinks]
     post = "/:year/:month/:day/:slug/"

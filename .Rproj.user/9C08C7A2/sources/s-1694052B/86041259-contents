@@ -1,4 +1,4 @@
-baseurl = "https://huanghaicheng1024.github.io/Rblog"
+baseurl = "https://huanghaicheng1024.github.io/Rblog/"
 publishDir = "docs"
 languageCode = "en-us"
 title = "A Hugo website"
