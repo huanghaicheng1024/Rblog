@@ -3,262 +3,232 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/2016/12/a-plain-markdown-post/</loc>
+    <loc>/Rblog/2016/12/a-plain-markdown-post/</loc>
     <lastmod>2016-12-30T21:49:57-07:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/</loc>
+    <loc>/Rblog/</loc>
     <lastmod>2016-12-30T21:49:57-07:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/post/</loc>
+    <loc>/Rblog/post/</loc>
     <lastmod>2016-12-30T21:49:57-07:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/about/</loc>
+    <loc>/Rblog/about/</loc>
     <lastmod>2016-05-05T21:48:51-07:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/categories/</loc>
+    <loc>/Rblog/categories/</loc>
     <lastmod>2015-07-23T21:13:14-05:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/2015/07/hello-r-markdown/</loc>
+    <loc>/Rblog/2015/07/hello-r-markdown/</loc>
     <lastmod>2015-07-23T21:13:14-05:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/plot/</loc>
+    <loc>/Rblog/tags/plot/</loc>
     <lastmod>2015-07-23T21:13:14-05:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/categories/r/</loc>
+    <loc>/Rblog/categories/r/</loc>
     <lastmod>2015-07-23T21:13:14-05:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/r-markdown/</loc>
+    <loc>/Rblog/tags/r-markdown/</loc>
     <lastmod>2015-07-23T21:13:14-05:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/regression/</loc>
+    <loc>/Rblog/tags/regression/</loc>
     <lastmod>2015-07-23T21:13:14-05:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/</loc>
+    <loc>/Rblog/tags/</loc>
     <lastmod>2015-07-23T21:13:14-05:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/disqus/</loc>
+    <loc>/Rblog/tags/disqus/</loc>
     <lastmod>2015-06-15T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/google-analytics/</loc>
+    <loc>/Rblog/tags/google-analytics/</loc>
     <lastmod>2015-06-15T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/gravatar/</loc>
+    <loc>/Rblog/tags/gravatar/</loc>
     <lastmod>2015-06-15T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/hexo-theme/</loc>
+    <loc>/Rblog/tags/hexo-theme/</loc>
     <lastmod>2015-06-15T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/categories/releases/</loc>
+    <loc>/Rblog/categories/releases/</loc>
     <lastmod>2015-06-15T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/responsive/</loc>
+    <loc>/Rblog/tags/responsive/</loc>
     <lastmod>2015-06-15T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/categories/tranquilpeak/</loc>
+    <loc>/Rblog/categories/tranquilpeak/</loc>
     <lastmod>2015-06-15T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/2015/06/welcome-to-tranquilpeak-0.4.7-beta/</loc>
+    <loc>/Rblog/2015/06/welcome-to-tranquilpeak-0.4.7-beta/</loc>
     <lastmod>2015-06-15T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/categories/showcase/</loc>
+    <loc>/Rblog/categories/showcase/</loc>
     <lastmod>2015-06-14T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/2015/06/who-is-using-tranquilpeak-hugo-theme/</loc>
+    <loc>/Rblog/2015/06/who-is-using-tranquilpeak-hugo-theme/</loc>
     <lastmod>2015-06-14T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/2015/05/elements-showcase/</loc>
+    <loc>/Rblog/2015/05/elements-showcase/</loc>
     <lastmod>2015-05-28T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/categories/features/</loc>
+    <loc>/Rblog/categories/features/</loc>
     <lastmod>2015-05-28T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/html-elements/</loc>
+    <loc>/Rblog/tags/html-elements/</loc>
     <lastmod>2015-05-28T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/markdown/</loc>
+    <loc>/Rblog/tags/markdown/</loc>
     <lastmod>2015-05-28T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/cover-image/</loc>
+    <loc>/Rblog/tags/cover-image/</loc>
     <lastmod>2015-05-13T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/2015/05/cover-image-showcase/</loc>
+    <loc>/Rblog/2015/05/cover-image-showcase/</loc>
     <lastmod>2015-05-13T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/github-theme/</loc>
-    <lastmod>2015-03-23T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/highlight-code/</loc>
-    <lastmod>2015-03-23T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/2015/03/highlighted-code-showcase/</loc>
-    <lastmod>2015-03-23T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/test/</loc>
-    <lastmod>2015-03-23T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/2015/01/lorem-ipsum/</loc>
+    <loc>/Rblog/2015/01/lorem-ipsum/</loc>
     <lastmod>2015-01-01T13:09:13-06:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/tag-plugins/</loc>
-    <lastmod>2014-10-29T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/2014/10/tags-plugins-showcase/</loc>
-    <lastmod>2014-10-29T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/2014/08/hidden-social-section-showcase/</loc>
+    <loc>/Rblog/2014/08/hidden-social-section-showcase/</loc>
     <lastmod>2014-08-17T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/social/</loc>
+    <loc>/Rblog/tags/social/</loc>
     <lastmod>2014-08-17T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/2014/08/hidden-tag-section-showcase/</loc>
+    <loc>/Rblog/2014/08/hidden-tag-section-showcase/</loc>
     <lastmod>2014-08-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/tags/</loc>
+    <loc>/Rblog/tags/tags/</loc>
     <lastmod>2014-08-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/2014/08/hidden-pagination-showcase/</loc>
+    <loc>/Rblog/2014/08/hidden-pagination-showcase/</loc>
     <lastmod>2014-08-15T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/pagination/</loc>
+    <loc>/Rblog/tags/pagination/</loc>
     <lastmod>2014-08-15T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/dailymotion/</loc>
+    <loc>/Rblog/tags/dailymotion/</loc>
     <lastmod>2014-08-09T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/2014/08/video-integrations-showcase/</loc>
+    <loc>/Rblog/2014/08/video-integrations-showcase/</loc>
     <lastmod>2014-08-09T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/videos-integration/</loc>
+    <loc>/Rblog/tags/videos-integration/</loc>
     <lastmod>2014-08-09T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/vimeo/</loc>
+    <loc>/Rblog/tags/vimeo/</loc>
     <lastmod>2014-08-09T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/youtube/</loc>
+    <loc>/Rblog/tags/youtube/</loc>
     <lastmod>2014-08-09T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/chinese/</loc>
+    <loc>/Rblog/tags/chinese/</loc>
     <lastmod>2013-10-02T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/2013/10/chinese-test/</loc>
+    <loc>/Rblog/2013/10/chinese-test/</loc>
     <lastmod>2013-10-02T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/image-gallery/</loc>
+    <loc>/Rblog/tags/image-gallery/</loc>
     <lastmod>2013-02-18T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/2013/02/image-gallery-showcase/</loc>
+    <loc>/Rblog/2013/02/image-gallery-showcase/</loc>
     <lastmod>2013-02-18T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/tags/japanese/</loc>
+    <loc>/Rblog/tags/japanese/</loc>
     <lastmod>2013-01-02T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/2013/01/japanese-test/</loc>
+    <loc>/Rblog/2013/01/japanese-test/</loc>
     <lastmod>2013-01-02T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://huanghaicheng1024.github.io/Rblog/archives/</loc>
+    <loc>/Rblog/archives/</loc>
   </url>
   
 </urlset>
