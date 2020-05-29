@@ -1,0 +1,23 @@
+---
+title: Test
+author: Huang
+date: '2020-05-29'
+slug: test
+categories: ["Blog"]
+tags: ["blog"]
+---
+
+
+这是一篇测试博客。
+
+数学符号
+$$
+\alpha = \sum_{i=1}^n\mu_i
+$$
+
+
+R代码测试
+```{r fig.cap="Fig 1"}
+summary(iris)
+```
+

@@ -44,10 +44,10 @@ enableEmoji = true
     MathJaxVersion = "2.7.5"
 
     # path to the favicon, under "static"
-    favicon = "favicon.ico"
+    favicon = "myfavicon.ico"
 
     [params.logo]
-    url = "logo.png"
+    url = "mylogo.png"
     width = 50
     height = 50
     alt = "Logo"
