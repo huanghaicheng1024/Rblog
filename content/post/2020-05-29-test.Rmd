@@ -21,3 +21,10 @@ R代码测试
 summary(iris)
 ```
 
+markdown测试
+
+- 1
+- 2
+
+1. a
+2. b

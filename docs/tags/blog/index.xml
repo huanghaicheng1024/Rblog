@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>blog on Rblog</title>
-    <link>https://huanghaicheng1024.github.io/Rblog/tags/blog/</link>
+    <link>/Rblog/tags/blog/</link>
     <description>Recent content in blog on Rblog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Sat, 30 May 2020 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="https://huanghaicheng1024.github.io/Rblog/tags/blog/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/Rblog/tags/blog/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Blog Theme/博客主题</title>
-      <link>https://huanghaicheng1024.github.io/Rblog/2020/05/30/blog-theme/</link>
+      <link>/Rblog/2020/05/30/blog-theme/</link>
       <pubDate>Sat, 30 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://huanghaicheng1024.github.io/Rblog/2020/05/30/blog-theme/</guid>
+      <guid>/Rblog/2020/05/30/blog-theme/</guid>
       <description>本博客的主题基于默认主题hugo-lithium进行了一些微小的改动。
 修改菜单栏，添加目录标签直接在config.toml上修改，
 [[menu.main]]name = &amp;quot;About&amp;quot;url = &amp;quot;/about/&amp;quot;weight = &amp;quot;2&amp;quot;[[menu.main]]name = &amp;quot;Categories&amp;quot;url = &amp;quot;/Categories/&amp;quot;weight = &amp;quot;3&amp;quot;[[menu.main]]name = &amp;quot;Tags&amp;quot;url = &amp;quot;/Tags/&amp;quot;weight = &amp;quot;4&amp;quot;[[menu.main]]name = &amp;quot;GitHub&amp;quot;url = &amp;quot;https://github.com/huanghaicheng1024&amp;quot;weight = &amp;quot;5&amp;quot;weight表示顺序。
@@ -27,10 +27,10 @@
     
     <item>
       <title>Test</title>
-      <link>https://huanghaicheng1024.github.io/Rblog/2020/05/29/test/</link>
+      <link>/Rblog/2020/05/29/test/</link>
       <pubDate>Fri, 29 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://huanghaicheng1024.github.io/Rblog/2020/05/29/test/</guid>
+      <guid>/Rblog/2020/05/29/test/</guid>
       <description>这是一篇测试博客。
 数学符号\[\alpha = \sum_{i=1}^n\mu_i\]
 R代码测试
