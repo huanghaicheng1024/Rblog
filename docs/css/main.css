@@ -257,7 +257,6 @@ code {
 
   .nav-logo img {
     max-height: 50px;
-    border-radius: 50%;
   }
 
   .nav-links {
@@ -320,5 +319,3 @@ code {
     box-shadow: none;
   }
 }
-
-img, iframe, video { max-width: 100%; }
