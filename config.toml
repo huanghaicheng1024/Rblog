@@ -1,5 +1,4 @@
 baseurl = "https://huanghaicheng1024.github.io/"
-publishDir = "docs"
 languageCode = "en-us"
 title = "Rblog"
 theme = "hugo-lithium"

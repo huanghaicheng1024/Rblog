@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.71.1" />
+
+
+<title>Blog Theme/博客主题 - Rblog</title>
+<meta property="og:title" content="Blog Theme/博客主题 - Rblog">
+
+
+  <link href='/myfavicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+
+<link href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+<link rel="stylesheet" href="/css/fonts.css" media="all">
+<link rel="stylesheet" href="/css/main.css" media="all">
+
+<link rel="stylesheet" href="/css/my-style.css">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="/" class="nav-logo">
+    <img src="/images/mylogo.png"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="/categories/">Categories</a></li>
+    
+    <li><a href="/tags/">Tags</a></li>
+    
+    <li><a href="https://github.com/huanghaicheng1024">GitHub</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">1 min read</span>
+    
+
+    <h1 class="article-title">Blog Theme/博客主题</h1>
+
+    
+    <span class="article-date">2020-05-30</span>
+    
+
+    <div class="article-content">
+      
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<p>本博客的主题基于默认主题<a href="https://github.com/yihui/hugo-lithium">hugo-lithium</a>
+进行了一些微小的改动。</p>
+<div id="修改菜单栏添加目录标签" class="section level2">
+<h2>修改菜单栏，添加目录标签</h2>
+<p>直接在<code>config.toml</code>上修改，</p>
+<pre class="yaml"><code>[[menu.main]]
+    name = &quot;About&quot;
+    url = &quot;/about/&quot;
+    weight = &quot;2&quot;
+[[menu.main]]
+    name = &quot;Categories&quot;
+    url = &quot;/Categories/&quot;
+    weight = &quot;3&quot;
+[[menu.main]]
+    name = &quot;Tags&quot;
+    url = &quot;/Tags/&quot;
+    weight = &quot;4&quot;
+[[menu.main]]
+    name = &quot;GitHub&quot;
+    url = &quot;https://github.com/huanghaicheng1024&quot;
+    weight = &quot;5&quot;</code></pre>
+<p><code>weight</code>表示顺序。</p>
+</div>
+<div id="更换图标" class="section level2">
+<h2>更换图标</h2>
+<p>下载喜欢的图标的两个文件<code>(.ico,.png)</code>,分别为博客左上角图片与浏览器标签页上面的图标，分别放在主题文件夹<code>/static/images,/static</code>，修改<code>config.toml</code>上<code>favicon</code>与<code>[params.logo]</code>的值。</p>
+</div>
+<div id="添加自定义css" class="section level2">
+<h2>添加自定义CSS</h2>
+<p><code>config.toml</code>添加代码</p>
+<pre class="yaml"><code>  # Custom CSS. Put here your custom CSS files. They are loaded after the theme CSS;
+  # they have to be referred from static root. Example
+    [params.customCSS]
+     href = &quot;css/my-style.css&quot;</code></pre>
+<p>并在主题<code>static</code>文件夹建立对应文件，添加自己所需的CSS样式，比如我取消了图标的弧度以及使R绘图的caption居中</p>
+<pre class="css"><code>.nav-logo img {
+    max-height: 50px;
+    border-radius: 0%;
+  }
+  
+  
+@media (min-width: 600px) {
+  .nav-logo img {
+    max-height: 50px;
+    border-radius: 0%;
+  }
+  
+.caption {
+  text-align: center;
+}</code></pre>
+</div>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+
+    
+  </body>
+</html>
+
