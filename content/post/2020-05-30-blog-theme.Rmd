@@ -1,0 +1,66 @@
+---
+title: Blog Theme/博客主题
+author: Huang
+date: '2020-05-30'
+slug: blog-theme
+categories: ["Blog"]
+tags: ["blog"]
+---
+
+本博客的主题基于默认主题[hugo-lithium](https://github.com/yihui/hugo-lithium)
+进行了一些微小的改动。
+
+## 修改菜单栏，添加目录标签
+
+直接在`config.toml`上修改，
+```yaml
+[[menu.main]]
+    name = "About"
+    url = "/about/"
+    weight = "2"
+[[menu.main]]
+    name = "Categories"
+    url = "/Categories/"
+    weight = "3"
+[[menu.main]]
+    name = "Tags"
+    url = "/Tags/"
+    weight = "4"
+[[menu.main]]
+    name = "GitHub"
+    url = "https://github.com/huanghaicheng1024"
+    weight = "5"
+```
+`weight`表示顺序。
+
+## 更换图标
+
+下载喜欢的图标的两个文件`(.ico,.png)`,分别为博客左上角图片与浏览器标签页上面的图标，分别放在主题文件夹`/static/images,/static`，修改`config.toml`上`favicon`与`[params.logo]`的值。
+
+## 添加自定义CSS
+
+`config.toml`添加代码
+```yaml
+  # Custom CSS. Put here your custom CSS files. They are loaded after the theme CSS;
+  # they have to be referred from static root. Example
+    [params.customCSS]
+     href = "css/my-style.css"
+```
+并在主题`static`文件夹建立对应文件，添加自己所需的CSS样式，比如我取消了图标的弧度以及使R绘图的caption居中
+```css
+.nav-logo img {
+    max-height: 50px;
+    border-radius: 0%;
+  }
+  
+  
+@media (min-width: 600px) {
+  .nav-logo img {
+    max-height: 50px;
+    border-radius: 0%;
+  }
+  
+.caption {
+  text-align: center;
+}
+```

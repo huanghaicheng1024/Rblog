@@ -1,7 +1,7 @@
 baseurl = "https://huanghaicheng1024.github.io/Rblog/"
 publishDir = "docs"
 languageCode = "en-us"
-title = "A Hugo website"
+title = "Rblog"
 theme = "hugo-lithium"
 googleAnalytics = ""
 disqusShortname = ""
@@ -17,22 +17,22 @@ enableEmoji = true
 [[menu.main]]
     name = "About"
     url = "/about/"
-    weight = "1"
+    weight = "2"
 [[menu.main]]
     name = "Categories"
     url = "/Categories/"
-    weight = "2"
+    weight = "3"
 [[menu.main]]
     name = "Tags"
     url = "/Tags/"
-    weight = "3"
+    weight = "4"
 [[menu.main]]
     name = "GitHub"
     url = "https://github.com/huanghaicheng1024"
-    weight = "4"
+    weight = "5"
 
 [params]
-    description = "A website built through Hugo and blogdown."
+    description = "A website built through Hugo and blogdown.A blog website of Huang"
 
     # options for highlight.js (version, additional languages, and theme)
     highlightjsVersion = "9.12.0"
@@ -46,9 +46,20 @@ enableEmoji = true
     # path to the favicon, under "static"
     favicon = "myfavicon.ico"
 
+
     [params.logo]
     url = "mylogo.png"
     width = 50
     height = 50
     alt = "Logo"
+    
+  # Custom CSS. Put here your custom CSS files. They are loaded after the theme CSS;
+  # they have to be referred from static root. Example
+    [params.customCSS]
+     href = "css/my-style.css"
+
+  # Custom JS. Put here your custom JS files. They are loaded after the theme JS;
+  # they have to be referred from static root. Example
+    [params.customJS]
+     src = "js/myjs.js"
 

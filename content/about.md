@@ -7,3 +7,5 @@ This is a "hello world" example website for the [**blogdown**](https://github.co
 
 
 现在这里是我学习R的博客，我会在这里不定期更新R的学习过程，以及使用R进行实战的过程。
+
+关于我？一条很菜却还有一点点理想的咸鱼，喜欢胡思乱想却懒于记录。
