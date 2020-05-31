@@ -54,8 +54,7 @@ summary(iris)## Sepal.Length Sepal.Width Petal.Length Petal.Width ## Min. :4.30
       
       <guid>/about/</guid>
       <description>This is a &amp;ldquo;hello world&amp;rdquo; example website for the blogdown package. The theme was forked from @jrutheiser/hugo-lithium-theme and modified by Yihui Xie.
-2020-5-30
-现在部署在Github Pages + Netlify上。
+2020-5-30 现在部署在Github Pages + Netlify上。
 现在这里是我学习R的博客，我会在这里不定期更新R的学习过程，以及使用R进行实战的过程。
 关于我？一条很菜却还有一点点理想的咸鱼，喜欢胡思乱想却懒于记录。</description>
     </item>
