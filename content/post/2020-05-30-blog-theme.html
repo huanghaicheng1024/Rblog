@@ -44,8 +44,25 @@ tags: ["blog"]
   # they have to be referred from static root. Example
     [params.customCSS]
      href = &quot;css/my-style.css&quot;</code></pre>
-<p>并在主题<code>static</code>文件夹建立对应文件，添加自己所需的CSS样式，比如我取消了图标的弧度以及使R绘图的caption居中</p>
-<pre class="css"><code>.nav-logo img {
+<p>并在主题<code>static</code>文件夹建立对应文件，添加自己所需的CSS样式，比如我取消了图标的弧度以及使R绘图的caption居中以及最大宽度为100%，以防手机页面体验不好；添加了支持中文字体的微软雅黑。</p>
+<pre class="css"><code>body {
+  font-family: &#39;Merriweather&#39;,&#39;Microsoft Yahei&#39;, serif;
+}
+
+h1, h2, h3, h4, h5, h6, .nav, .article-duration, .archive-item-link, .footer {
+  font-family: &#39;Lato&#39;,&#39;Microsoft Yahei&#39;, sans-serif;
+}
+
+.caption {
+  text-align: center;
+}
+
+.figure img{
+  max-width: 100%;
+}
+
+
+.nav-logo img {
     max-height: 50px;
     border-radius: 0%;
   }
@@ -55,9 +72,5 @@ tags: ["blog"]
   .nav-logo img {
     max-height: 50px;
     border-radius: 0%;
-  }
-  
-.caption {
-  text-align: center;
-}</code></pre>
+  }</code></pre>
 </div>
