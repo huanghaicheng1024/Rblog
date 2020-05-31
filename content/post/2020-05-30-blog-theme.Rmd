@@ -46,8 +46,25 @@ tags: ["blog"]
     [params.customCSS]
      href = "css/my-style.css"
 ```
-并在主题`static`文件夹建立对应文件，添加自己所需的CSS样式，比如我取消了图标的弧度以及使R绘图的caption居中
+并在主题`static`文件夹建立对应文件，添加自己所需的CSS样式，比如我取消了图标的弧度以及使R绘图的caption居中以及最大宽度为100%，以防手机页面体验不好；添加了支持中文字体的微软雅黑。
 ```css
+body {
+  font-family: 'Merriweather','Microsoft Yahei', serif;
+}
+
+h1, h2, h3, h4, h5, h6, .nav, .article-duration, .archive-item-link, .footer {
+  font-family: 'Lato','Microsoft Yahei', sans-serif;
+}
+
+.caption {
+  text-align: center;
+}
+
+.figure img{
+  max-width: 100%;
+}
+
+
 .nav-logo img {
     max-height: 50px;
     border-radius: 0%;
@@ -59,8 +76,4 @@ tags: ["blog"]
     max-height: 50px;
     border-radius: 0%;
   }
-  
-.caption {
-  text-align: center;
-}
 ```

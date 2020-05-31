@@ -36,7 +36,7 @@ enableEmoji = true
     # options for highlight.js (version, additional languages, and theme)
     highlightjsVersion = "9.12.0"
     highlightjsCDN = "//cdnjs.cloudflare.com/ajax/libs"
-    highlightjsLang = ["r", "yaml"]
+    highlightjsLang = ["r", "yaml" ,"css"]
     highlightjsTheme = "github"
 
     MathJaxCDN = "//cdnjs.cloudflare.com/ajax/libs"
@@ -62,3 +62,8 @@ enableEmoji = true
     [params.customJS]
      src = "js/myjs.js"
 
+  [params.utteranc]
+  enable = true
+  repo = "huanghaicheng1024/Blog-comments"    # 存储评论的Repo，格式为 owner/repo
+  issueTerm = "title"           # 表示你选择以那种方式让github issue的评论和你的文章关联可以选择默认的pathname。
+  theme = "github-light"        # 样式主题
