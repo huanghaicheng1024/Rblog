@@ -2,30 +2,30 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Categories on Rblog</title>
-    <link>https://h-haicheng.netlify.app/categories/</link>
+    <link>/categories/</link>
     <description>Recent content in Categories on Rblog</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
+    <language>zh-cn</language>
     <lastBuildDate>Sat, 30 May 2020 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="https://h-haicheng.netlify.app/categories/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/categories/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Blog</title>
-      <link>https://h-haicheng.netlify.app/categories/blog/</link>
+      <link>/categories/blog/</link>
       <pubDate>Sat, 30 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://h-haicheng.netlify.app/categories/blog/</guid>
+      <guid>/categories/blog/</guid>
       <description></description>
     </item>
     
     <item>
       <title>R</title>
-      <link>https://h-haicheng.netlify.app/categories/r/</link>
+      <link>/categories/r/</link>
       <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>
       
-      <guid>https://h-haicheng.netlify.app/categories/r/</guid>
+      <guid>/categories/r/</guid>
       <description></description>
     </item>
     

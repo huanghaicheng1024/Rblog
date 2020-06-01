@@ -8,7 +8,9 @@ tags: ["blog"]
 ---
 
 本博客的主题基于默认主题[hugo-lithium](https://github.com/yihui/hugo-lithium)
-进行了一些微小的改动。
+进行了一些微小的改动。[传送门](https://github.com/huanghaicheng1024/hugo-lithium)
+
+在使用过程中有什么不满意的地方会自己尝试修改，并在这里不定期更新。
 
 ## 修改菜单栏，添加目录标签
 
@@ -32,6 +34,17 @@ tags: ["blog"]
     weight = "5"
 ```
 `weight`表示顺序。
+
+2020-6-1
+
+反正没什么人会点击我的GitHub，改写了一下`footer.html`，可以自定义类似`RSS feed`的`footer`内容。只需在`config.toml`设置
+```toml
+[[menu.footer]]
+    name = "GitHub"
+    url = "https://github.com/huanghaicheng1024"
+    weight = "1"
+```
+
 
 ## 更换图标
 

@@ -2,35 +2,38 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Blog on Rblog</title>
-    <link>https://h-haicheng.netlify.app/categories/blog/</link>
+    <link>/categories/blog/</link>
     <description>Recent content in Blog on Rblog</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
+    <language>zh-cn</language>
     <lastBuildDate>Sat, 30 May 2020 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="https://h-haicheng.netlify.app/categories/blog/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/categories/blog/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Blog Theme/博客主题</title>
-      <link>https://h-haicheng.netlify.app/2020/05/30/blog-theme/</link>
+      <link>/2020/05/30/blog-theme/</link>
       <pubDate>Sat, 30 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://h-haicheng.netlify.app/2020/05/30/blog-theme/</guid>
-      <description>本博客的主题基于默认主题hugo-lithium进行了一些微小的改动。
+      <guid>/2020/05/30/blog-theme/</guid>
+      <description>本博客的主题基于默认主题hugo-lithium进行了一些微小的改动。传送门
+在使用过程中有什么不满意的地方会自己尝试修改，并在这里不定期更新。
 修改菜单栏，添加目录标签直接在config.toml上修改，
 [[menu.main]]name = &amp;quot;About&amp;quot;url = &amp;quot;/about/&amp;quot;weight = &amp;quot;2&amp;quot;[[menu.main]]name = &amp;quot;Categories&amp;quot;url = &amp;quot;/Categories/&amp;quot;weight = &amp;quot;3&amp;quot;[[menu.main]]name = &amp;quot;Tags&amp;quot;url = &amp;quot;/Tags/&amp;quot;weight = &amp;quot;4&amp;quot;[[menu.main]]name = &amp;quot;GitHub&amp;quot;url = &amp;quot;https://github.com/huanghaicheng1024&amp;quot;weight = &amp;quot;5&amp;quot;weight表示顺序。
-更换图标下载喜欢的图标的两个文件(.ico,.png),分别为博客左上角图片与浏览器标签页上面的图标，分别放在主题文件夹/static/images,/static，修改config.toml上favicon与[params.logo]的值。
+2020-6-1
+反正没什么人会点击我的GitHub，改写了一下footer.html，可以自定义类似RSS feed的footer内容。只需在config.toml设置
+[[menu.footer]]name = &amp;quot;GitHub&amp;quot;url = &amp;quot;https://github.com/huanghaicheng1024&amp;quot;weight = &amp;quot;1&amp;quot;更换图标下载喜欢的图标的两个文件(.ico,.png),分别为博客左上角图片与浏览器标签页上面的图标，分别放在主题文件夹/static/images,/static，修改config.toml上favicon与[params.logo]的值。
 添加自定义CSSconfig.toml添加代码
- # Custom CSS. Put here your custom CSS files. They are loaded after the theme CSS;# they have to be referred from static root.</description>
+ # Custom CSS.</description>
     </item>
     
     <item>
       <title>Test</title>
-      <link>https://h-haicheng.netlify.app/2020/05/29/test/</link>
+      <link>/2020/05/29/test/</link>
       <pubDate>Fri, 29 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://h-haicheng.netlify.app/2020/05/29/test/</guid>
+      <guid>/2020/05/29/test/</guid>
       <description>这是一篇测试博客。
 数学符号\[\alpha = \sum_{i=1}^n\mu_i\]
 R代码测试

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html lang="zh-cn">
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +10,7 @@
 <meta property="og:title" content="Blog Theme/博客主题 - Rblog">
 
 
-  <link href='https://h-haicheng.netlify.app/myfavicon.ico' rel='icon' type='image/x-icon'/>
+  <link href='/myfavicon.ico' rel='icon' type='image/x-icon'/>
 
 
 
@@ -54,8 +54,6 @@
     
     <li><a href="/tags/">Tags</a></li>
     
-    <li><a href="https://github.com/huanghaicheng1024">GitHub</a></li>
-    
   </ul>
 </nav>
 
@@ -81,7 +79,8 @@
 
 
 <p>本博客的主题基于默认主题<a href="https://github.com/yihui/hugo-lithium">hugo-lithium</a>
-进行了一些微小的改动。</p>
+进行了一些微小的改动。<a href="https://github.com/huanghaicheng1024/hugo-lithium">传送门</a></p>
+<p>在使用过程中有什么不满意的地方会自己尝试修改，并在这里不定期更新。</p>
 <div id="修改菜单栏添加目录标签" class="section level2">
 <h2>修改菜单栏，添加目录标签</h2>
 <p>直接在<code>config.toml</code>上修改，</p>
@@ -102,6 +101,12 @@
     url = &quot;https://github.com/huanghaicheng1024&quot;
     weight = &quot;5&quot;</code></pre>
 <p><code>weight</code>表示顺序。</p>
+<p>2020-6-1</p>
+<p>反正没什么人会点击我的GitHub，改写了一下<code>footer.html</code>，可以自定义类似<code>RSS feed</code>的<code>footer</code>内容。只需在<code>config.toml</code>设置</p>
+<pre class="toml"><code>[[menu.footer]]
+    name = &quot;GitHub&quot;
+    url = &quot;https://github.com/huanghaicheng1024&quot;
+    weight = &quot;1&quot;</code></pre>
 </div>
 <div id="更换图标" class="section level2">
 <h2>更换图标</h2>
@@ -177,6 +182,11 @@ h1, h2, h3, h4, h5, h6, .nav, .article-duration, .archive-item-link, .footer {
           <li>
             <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
           </li>
+          
+          
+            <li><a href="https://github.com/huanghaicheng1024" target="_blank">GitHub</a></li>
+          
+            
         </ul>
       </footer>
 
