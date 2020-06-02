@@ -15,7 +15,7 @@ tags: ["blog"]
 ## 修改菜单栏，添加目录标签
 
 直接在`config.toml`上修改，
-```toml
+```yaml
 [[menu.main]]
     name = "About"
     url = "/about/"
@@ -38,7 +38,7 @@ tags: ["blog"]
 2020-6-1
 
 反正没什么人会点击我的GitHub，改写了一下`footer.html`，可以自定义类似`RSS feed`的`footer`内容。只需在`config.toml`设置
-```toml
+```yaml
 [[menu.footer]]
     name = "GitHub"
     url = "https://github.com/huanghaicheng1024"
@@ -53,7 +53,7 @@ tags: ["blog"]
 ## 添加自定义CSS
 
 `config.toml`添加代码
-```toml
+```yaml
   # Custom CSS. Put here your custom CSS files. They are loaded after the theme CSS;
   # they have to be referred from static root. Example
     [params.customCSS]
