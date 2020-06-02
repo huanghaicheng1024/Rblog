@@ -15,7 +15,7 @@ tags: ["blog"]
 ## 修改菜单栏，添加目录标签
 
 直接在`config.toml`上修改，
-```yaml
+```toml
 [[menu.main]]
     name = "About"
     url = "/about/"
@@ -53,7 +53,7 @@ tags: ["blog"]
 ## 添加自定义CSS
 
 `config.toml`添加代码
-```yaml
+```toml
   # Custom CSS. Put here your custom CSS files. They are loaded after the theme CSS;
   # they have to be referred from static root. Example
     [params.customCSS]
@@ -95,4 +95,4 @@ h1, h2, h3, h4, h5, h6, .nav, .article-duration, .archive-item-link, .footer {
 
 2020-5-31
 
-添加了[utteranc](utteranc.es)，观望一下先。
+添加了[utteranc](https://utteranc.es)，观望一下先。
