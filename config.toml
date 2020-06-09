@@ -1,6 +1,6 @@
 baseurl = "https://h-haicheng.netlify.app/"
 languageCode = "zh-cn"
-title = "Rblog"
+title = "Rblog|Huang's personal blog"
 theme = "hugo-lithium"
 googleAnalytics = ""
 disqusShortname = ""
