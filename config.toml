@@ -25,6 +25,12 @@ enableEmoji = true
     name = "Tags"
     url = "/Tags/"
     weight = "4"
+    
+[[menu.main]]
+    name = "Notebooks"
+    url = "/notebooks/"
+    weight = "5"
+
 [[menu.footer]]
     name = "GitHub"
     url = "https://github.com/huanghaicheng1024"
