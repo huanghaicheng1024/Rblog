@@ -3,6 +3,7 @@ title: Standard Form Of Equation/二阶偏微分方程的标准型
 author: Huang
 date: '2020-06-14'
 slug: standard-form-of-equation
+markup: mmark
 categories:
   - Course
 tags:
