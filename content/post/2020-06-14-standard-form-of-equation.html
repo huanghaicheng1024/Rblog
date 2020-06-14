@@ -1,0 +1,374 @@
+---
+title: Standard Form Of Equation/二阶偏微分方程的标准型
+author: Huang
+date: '2020-06-14'
+slug: standard-form-of-equation
+markup: mmark
+categories:
+  - Course
+tags:
+  - PDE
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<div id="前言" class="section level1">
+<h1>前言</h1>
+<p>在本科学习数学物理方程这门课程时，二阶方程的特征理论与分类是绕不开的内容。</p>
+<p>下面将分别对含有两个自变量的二阶线性偏微分方程以及主部具有常系数的多个自变量的二阶线性偏微分方程，就其如何变换为标准型做一下基本方法的总结，并为了提高计算速度，加入了使用矩阵<span class="math inline">\(J^3,J_0\)</span> 以及合同矩阵 <span class="math inline">\(B\)</span> 的方法。</p>
+</div>
+<div id="两个变量的情形" class="section level1">
+<h1>两个变量的情形</h1>
+<div id="基本方法" class="section level2">
+<h2>基本方法</h2>
+<p>一般的含有两个自变量的二阶线性偏微分方程可以写成形式：
+<span class="math display">\[
+au_{xx}+2bu_{xy}+c_{yy}+du_x+eu_y+gu=f
+\]</span>
+其中 <span class="math inline">\(a,b,c,d,e,f,g\)</span> 都是 <span class="math inline">\(x,y\)</span> 的已知函数。</p>
+<p>略过前面的步骤（如何求特征线，取可逆自变量变换等），假设我们已知对上述方程作可逆自变量变换：
+<span class="math display">\[
+\begin{cases}
+\xi = \varphi(x,y)\\
+\eta = \psi(x,y)
+\end{cases}
+\]</span>
+接下来我们应当如何求解方程关于新自变量的形式？</p>
+<p>一种方法：我们可以利用求导的链式法则，不停地求导再合并同类项，将方程转化为关于新变量<span class="math inline">\(\xi,\eta\)</span>的形式。</p>
+<p>另一种方法，我们可以利用矩阵记忆求导关系。</p>
+<p><strong>当方程为常系数方程的时候</strong>，我们可以将上面的链式法则求导过程机械化，利用雅可比矩阵 <span class="math inline">\(J\)</span> 构造 <span class="math inline">\(J^3\)</span> ，较快得到结果。下面进行阐述。</p>
+<p>注意到：
+<span class="math display">\[
+\begin{bmatrix}
+u_x\\
+u_y
+\end{bmatrix}
+=
+\begin{bmatrix}
+\xi_x &amp; \eta_x\\
+\xi_y &amp; \eta_y
+\end{bmatrix}
+\begin{bmatrix}
+u_{\xi}\\
+u_{\eta}
+\end{bmatrix}
+= J^{\mathrm T}
+\begin{bmatrix}
+u_{\xi}\\
+u_{\eta}
+\end{bmatrix}
+\]</span>
+其中 <span class="math inline">\(J\)</span> 为变换的雅可比矩阵。并且有
+<span class="math display">\[
+\begin{bmatrix}
+u_{xx}\\
+u_{xy}\\
+u_{yy}
+\end{bmatrix}
+=
+\begin{bmatrix}
+\xi_x^2 &amp; 2\xi_x\eta_x &amp; \eta_x^2\\
+\xi_x\xi_y &amp; \xi_x\eta_y+\xi_y\eta_x &amp; \eta_x\eta_y\\
+\xi_y^2 &amp; 2\xi_y\eta_y &amp; \eta_y^2
+\end{bmatrix}
+\begin{bmatrix}
+u_{\xi\xi}\\
+u_{\xi\eta}\\
+u_{\eta\eta}
+\end{bmatrix}
+= J^3
+\begin{bmatrix}
+u_{\xi\xi}\\
+u_{\xi\eta}\\
+u_{\eta\eta}
+\end{bmatrix}
+\]</span>
+并且可以看到 <span class="math inline">\(J^3\)</span> 与 <span class="math inline">\(J^{\mathrm T}\)</span> 有很大的联系，如果记住 <span class="math inline">\(J^3\)</span> ，意味着你可以不需要用链式法则繁琐地求二阶导。</p>
+<p>然后由于
+<span class="math display">\[
+au_{xx}+2bu_{xy}+c_{yy}=
+\begin{bmatrix}
+a &amp; 2b &amp; c
+\end{bmatrix}
+\begin{bmatrix}
+u_{xx}\\
+u_{xy}\\
+u_{yy}
+\end{bmatrix}
+= 
+\begin{bmatrix}
+a &amp; 2b &amp; c
+\end{bmatrix}
+J^3
+\begin{bmatrix}
+u_{\xi\xi}\\
+u_{\xi\eta}\\
+u_{\eta\eta}
+\end{bmatrix}
+\]</span></p>
+<p><span class="math display">\[
+du_x+eu_y
+=
+\begin{bmatrix}
+d &amp; e
+\end{bmatrix}
+\begin{bmatrix}
+u_x\\
+u_y
+\end{bmatrix}
+=
+\begin{bmatrix}
+d &amp; e
+\end{bmatrix}
+J^{\mathrm T}
+\begin{bmatrix}
+u_{\xi}\\
+u_{\eta}
+\end{bmatrix}
+\]</span></p>
+<p>即可得到 <span class="math inline">\(u_{\xi\xi},u_{\xi\eta},u_{\eta\eta},u_{\xi},u_{\eta}\)</span> 的系数，其余项不变，标准型即可求得。</p>
+<p><strong>当方程为变系数方程的时候</strong>，对原方程二阶导的转化时可能会出现对新变量的一阶导，具体关系为：
+<span class="math display">\[
+\begin{bmatrix}
+u_{xx}\\
+u_{xy}\\
+u_{yy}
+\end{bmatrix}
+= J^3
+\begin{bmatrix}
+u_{\xi\xi}\\
+u_{\xi\eta}\\
+u_{\eta\eta}
+\end{bmatrix}
++
+\begin{bmatrix}
+\xi_{xx} &amp; \eta_{xx}\\
+\xi_{xy} &amp; \eta_{xy}\\
+\xi_{yy} &amp; \eta_{yy}
+\end{bmatrix}
+\begin{bmatrix}
+u_{\xi}\\
+u_{\eta}
+\end{bmatrix}
+= J^3
+\begin{bmatrix}
+u_{\xi\xi}\\
+u_{\xi\eta}\\
+u_{\eta\eta}
+\end{bmatrix}
++
+J_0
+\begin{bmatrix}
+u_{\xi}\\
+u_{\eta}
+\end{bmatrix}
+\]</span>
+原变量方程的二阶导数项转化为
+<span class="math display">\[
+au_{xx}+2bu_{xy}+c_{yy}
+= 
+\begin{bmatrix}
+a &amp; 2b &amp; c
+\end{bmatrix}
+J^3
+\begin{bmatrix}
+u_{\xi\xi}\\
+u_{\xi\eta}\\
+u_{\eta\eta}
+\end{bmatrix}
++
+\begin{bmatrix}
+a &amp; 2b &amp; c
+\end{bmatrix}
+J^0
+\begin{bmatrix}
+u_{\xi}\\
+u_{\eta}
+\end{bmatrix}
+\]</span>
+一阶导数的转化跟前面一样。</p>
+</div>
+<div id="举例" class="section level2">
+<h2>举例</h2>
+<p>方程：
+<span class="math display">\[
+4u_{xx}+5u_{xy}+u_{yy}+u_x+u_y+2=0
+\]</span>
+容易知道，这是一个双曲型方程，并可作变换：
+<span class="math display">\[
+\begin{cases}
+\xi = y-x\\
+\eta = y-\dfrac x4
+\end{cases}
+\]</span>
+我们由上面的理论，先求
+<span class="math display">\[
+J^{\mathrm T}
+=
+\begin{bmatrix}
+\xi_x &amp; \eta_x\\
+\xi_y &amp; \eta_y
+\end{bmatrix}
+=
+\begin{bmatrix}
+-1 &amp; -\dfrac14\\
+1 &amp; 1
+\end{bmatrix}
+\]</span>
+由 <span class="math inline">\(J^{\mathrm T}\)</span> 与 <span class="math inline">\(J^3\)</span> 之间的关系，可以直接得到
+<span class="math display">\[
+J^3
+=
+\begin{bmatrix}
+1 &amp; \dfrac12 &amp; \dfrac1{16}\\
+-1 &amp; -\dfrac54 &amp; -\dfrac14\\
+1 &amp; 2 &amp; 1
+\end{bmatrix}
+\]</span>
+进而可以得到 <span class="math inline">\(u_{\xi\xi},u_{\xi\eta},u_{\eta\eta}\)</span> 的系数为
+<span class="math display">\[
+\begin{bmatrix}
+4 &amp; 5 &amp; 1
+\end{bmatrix}
+\begin{bmatrix}
+1 &amp; \dfrac12 &amp; \dfrac1{16}\\
+-1 &amp; -\dfrac54 &amp; -\dfrac14\\
+1 &amp; 2 &amp; 1
+\end{bmatrix}
+= 
+\begin{bmatrix}
+0 &amp; -\dfrac94 &amp; 0
+\end{bmatrix}
+\]</span>
+<span class="math inline">\(u_{\xi},u_{\eta}\)</span> 的系数为：
+<span class="math display">\[
+\begin{bmatrix}
+1 &amp; 1
+\end{bmatrix}
+\begin{bmatrix}
+-1 &amp; -\dfrac14\\
+1 &amp; 1
+\end{bmatrix}
+=
+\begin{bmatrix}
+0 &amp; \dfrac 34
+\end{bmatrix}
+\]</span>
+所以方程标准型为：
+<span class="math display">\[
+-\frac94u_{\xi\eta}+\frac34u_\eta+2=0
+\]</span>
+整理一下：
+<span class="math display">\[
+u_{\xi\eta}-\frac13u_{\eta}-\frac89=0
+\]</span>
+这就结束了。</p>
+<p>实际上这个例子举得并不好，然而我懒得改了。。</p>
+</div>
+</div>
+<div id="多个变量的情形" class="section level1">
+<h1>多个变量的情形</h1>
+<div id="基本方法-1" class="section level2">
+<h2>基本方法</h2>
+<p>仅考虑主部具有常系数的多个变量的二阶线性偏微分方程：
+<span class="math display">\[
+\sum_{i,j=1}^na_{ij}\frac{\partial^2u}{\partial x_i\partial x_j}
++\sum_{i=1}^nc_i(x_1,\cdots,x_n)\frac{\partial u}{\partial x_i}
++b(x_1,\cdots,x_n)u
+=f(x_1,\cdots,x_n)
+\]</span>
+其中 <span class="math inline">\(a_{ij}=a_{ji}\)</span> 为常数。</p>
+<p>同样地，我们略过前面将特征二次型<span class="math inline">\(\mathcal D\)</span>化为标准型的步骤。假设我们求得了矩阵 <span class="math inline">\(A=\{a_{ij}\}\)</span> 的合同矩阵 <span class="math inline">\(B\)</span>，令 <span class="math inline">\(\alpha=B\beta\)</span> ，得
+<span class="math display">\[
+\mathcal D=\alpha^{\mathrm T}A\alpha=\beta^{\mathrm T}\Lambda\beta
+\]</span>
+此时特征二次型<span class="math inline">\(\mathcal D\)</span>化为了标准型。其中 <span class="math inline">\(\Lambda=\mathrm{diag}\{\lambda_1\cdots,\lambda_n\},\lambda_i=0\ or\ 1\)</span> 为特征二次型的标准型。</p>
+<p>那么此时我们可以确定方程的类型，并且确定了方程二阶导数项的系数就是 <span class="math inline">\(\lambda_1\cdots,\lambda_n\)</span> 。</p>
+<p>然后我们做自变量变换：
+<span class="math display">\[
+\mathbf Y = B^{\mathrm T}\mathbf X
+\]</span>
+这时我们只需要确定标准型的一阶导数项的系数就可以了。</p>
+<p>容易知道，矩阵 <span class="math inline">\(B\)</span> 是数值矩阵，也即上面的变换，对于每个 <span class="math inline">\(y_i\)</span> ，它都是关于 <span class="math inline">\(x_1,\cdots,x_n\)</span> 的线性函数。于是容易验证：
+<span class="math display">\[
+B =
+\begin{bmatrix}
+\dfrac{\partial y_1}{\partial x_1} &amp; \cdots &amp; \dfrac{\partial y_n}{\partial x_1}\\
+\vdots &amp; &amp; \vdots\\
+\dfrac{\partial y_1}{\partial x_n} &amp; \cdots &amp; \dfrac{\partial y_n}{\partial x_n}
+\end{bmatrix}
+\]</span>
+所以
+<span class="math display">\[
+\begin{bmatrix}
+u_{x_1}\\
+\vdots\\
+u_{x_n}
+\end{bmatrix}
+=B
+\begin{bmatrix}
+u_{y_1}\\
+\vdots\\
+u_{y_n}
+\end{bmatrix}
+\]</span>
+假设原方程一阶导数项的系数为 <span class="math inline">\(C=[c_1,\cdots,c_n]\)</span> ，则标准型的一阶导数项的系数为 <span class="math inline">\(CB\)</span> 。</p>
+</div>
+<div id="举例-1" class="section level2">
+<h2>举例</h2>
+<p>方程：
+<span class="math display">\[
+u_{xx}-4u_{xy}+2u_{xz}+4u_{yy}+u_{zz}+2u_x+u_y-3u=0
+\]</span>
+可以求得矩阵
+<span class="math display">\[
+B=
+\begin{bmatrix}
+1 &amp; \dfrac12 &amp; \dfrac32\\
+0 &amp; \dfrac12 &amp; \dfrac12\\
+0 &amp; \dfrac12 &amp; -\dfrac12
+\end{bmatrix}
+\]</span>
+与 <span class="math inline">\(\Lambda=\mathrm{diag}\{1,1,-1\}\)</span> ，标准型的二阶导数项系数已经确定。</p>
+<p>当作自变量变换：
+<span class="math display">\[
+\begin{bmatrix}
+\xi\\
+\eta\\
+\zeta
+\end{bmatrix}
+= B^{\mathrm T}
+\begin{bmatrix}
+x\\
+y\\
+z
+\end{bmatrix}
+\]</span>
+标准型一阶导数项的系数为
+<span class="math display">\[
+CB
+=
+\begin{bmatrix}
+2 &amp; 1 &amp; 0
+\end{bmatrix}
+\begin{bmatrix}
+1 &amp; \dfrac12 &amp; \dfrac32\\
+0 &amp; \dfrac12 &amp; \dfrac12\\
+0 &amp; \dfrac12 &amp; -\dfrac12
+\end{bmatrix}
+=
+\begin{bmatrix}
+2 &amp; \dfrac32 &amp; \dfrac72
+\end{bmatrix}
+\]</span>
+其他项不变。所以立即可得方程的标准型为：
+<span class="math display">\[
+u_{\xi\xi}+u_{\eta\eta}-u_{\zeta\zeta}+2u_{\xi}+\frac32u_{\eta}+\frac72u_{\zeta}-3u=0
+\]</span></p>
+</div>
+</div>
+<div id="补充说明" class="section level1">
+<h1>补充说明</h1>
+<p>最后求得的标准型的系数中可能含原变量，需要进一步转化，即利用自变量之间的关系将原变量转化为新变量。</p>
+</div>
