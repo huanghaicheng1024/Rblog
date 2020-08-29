@@ -7,5 +7,7 @@ Some notebooks:
 
 - [PRML学习笔记](https://huanghaicheng1024.github.io/PRML-study-notes/index.html)
 
+- [r4ds学习笔记](https://huanghaicheng1024.github.io/r4ds-study-notes/index.html)
+
 - ...
 
