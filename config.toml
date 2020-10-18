@@ -1,4 +1,4 @@
-baseurl = "https://h-haicheng.netlify.app/"
+baseurl = "https://hhcheng.netlify.app/"
 languageCode = "zh-cn"
 title = "Rblog|Huang's personal blog"
 theme = "hugo-lithium"
