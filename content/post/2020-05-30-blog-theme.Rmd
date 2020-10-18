@@ -96,3 +96,7 @@ h1, h2, h3, h4, h5, h6, .nav, .article-duration, .archive-item-link, .footer {
 2020-5-31
 
 添加了[utteranc](https://utteranc.es)，观望一下先。
+
+## 添加分类、标签
+
+在每篇文章末尾添加分类、标签，参考 https://github.com/RainerChiang/simpleness
