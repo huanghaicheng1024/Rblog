@@ -5,7 +5,7 @@ disable_comments: true
 
 Some notebooks:
 
-- [PRML学习笔记](https://huanghaicheng1024.github.io/PRML-study-notes/index.html)
+- PRML学习笔记（暂时停更）
 
 - [r4ds学习笔记](https://huanghaicheng1024.github.io/r4ds-study-notes/index.html)
 
