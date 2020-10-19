@@ -92,5 +92,11 @@ h1, h2, h3, h4, h5, h6, .nav, .article-duration, .archive-item-link, .footer {
 </div>
 <div id="添加更新日期" class="section level2">
 <h2>添加更新日期</h2>
-<p>在每篇文章末尾添加更新日期</p>
+<p>在每篇文章末尾添加更新日期。方法：在<code>single.html</code>文件中加入</p>
+<pre class="html"><code>      {{ if eq .Section &quot;post&quot; }}
+      &lt;span class=&quot;article-date&quot;&gt; update @ {{ .Lastmod.Format &quot;2006-01-02&quot; }}&lt;/span&gt;
+      &lt;p&gt;&lt;/p&gt;
+      {{ end }}
+</code></pre>
+<p>并在<code>config.toml</code>中打开设置<code>enableGitInfo = "true"</code>，将文件的Git修改日期作为文章更新日期。</p>
 </div>
