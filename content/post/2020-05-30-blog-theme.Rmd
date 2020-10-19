@@ -100,3 +100,7 @@ h1, h2, h3, h4, h5, h6, .nav, .article-duration, .archive-item-link, .footer {
 ## 添加分类、标签
 
 在每篇文章末尾添加分类、标签，参考 https://github.com/RainerChiang/simpleness
+
+## 添加更新日期
+
+在每篇文章末尾添加更新日期
