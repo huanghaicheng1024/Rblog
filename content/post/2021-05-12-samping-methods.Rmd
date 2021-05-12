@@ -1,0 +1,951 @@
+---
+title: 采样方法
+author: Huang
+date: '2021-05-12'
+slug: samping-methods
+categories:
+  - Statistics
+tags:
+  - R
+---
+
+# 前言
+
+利用R实现一些采样方法，分析各个方法的一些特点。
+
+```{r message=FALSE}
+library(tidyverse)
+library(MASS)
+library(latex2exp)
+library(showtext)
+library(Cairo)
+
+library(nloptr)
+
+set.seed(1024)
+```
+
+```{r}
+knitr::opts_chunk$set(
+  out.width = "70%",
+  fig.align = 'center',
+  fig.width = 6,
+  fig.asp = 0.618  # 1 / phi
+)
+```
+
+
+```{r}
+# 设置ggplot的主题
+showtext_auto()
+
+old <-theme_light()
+theme_set(old)
+
+#main_path = ""
+```
+
+
+## 拒绝采样
+
+拒绝采样类似于求pi的做法，在正方形上随机均匀采样，用落在内接圆内的点的个数除以总的点个数，等于内接圆与正方形的面积之比。
+
+同样的，拒绝采样也需要一个类似于正方形的辅助工具，那就是提议分布，再利用类似的接受-拒绝准则，使得样本点能在待采样分布密度函数曲线内均匀分布。
+
+假设我们需要Beta(2,5)中采样，先定义它的未归一化密度函数：
+
+```{r}
+# 需要采样的分布
+
+px <- function(x){
+    y <- ifelse(x>=0&x<=1,x*(1-x)^4,0)
+}
+ggplot()+
+    xlim(-0.5,1)+
+    geom_function(fun=px)+
+    labs(title = "未归一化的Beta(2,5)分布",y=TeX("$\\tilde{p}(z)$"),
+         x="z")
+    #ggsave("Beta-distrution.pdf",width = 3.5,height = 3.5,path = main_path)
+```
+
+分别以均匀分布、正态分布为提议分布，它们的k倍能够包络待采样分布。下面的k并不一定取到最小。
+
+```{r}
+
+# 提议分布为均匀分布
+# px为密度函数,
+# n不是生成px的样本数，而是提议分布的样本数
+rejection_sampling_unit <- function(px, n, ...){
+    x <- runif(n, ...)  # 生成n个随机数
+    y = px(x)
+    d <- dunif(x, ...)
+    k = max(y/d)
+    z = runif(n, 0, k*d)
+    output = list(data = tibble(x,y,z,d=(z<=y)),
+                 samples = x[z<=y],
+                 k = k)
+    return(output)
+}    
+
+# 提议分布为正态分布
+
+rejection_sampling_norm <- function(px, n, ...){
+    x <- rnorm(n, ...)  # 生成n个随机数
+    y <- px(x)
+    d <- dnorm(x,...)
+    k <- max(y/d)
+    z <- runif(n, 0, k*d)
+    output = list(data = tibble(x,y,z,d=(z<=y)),
+                 samples = x[z<=y],
+                 k = k)
+    return(output)
+} 
+```
+
+首先的均匀分布，参数为[0,1]
+
+```{r}
+n <- 10000 
+out1 <- rejection_sampling_unit(px, n ,0, 1)
+tb1 <- out1$data
+tb1 %>% ggplot(mapping = aes(x = x)) +
+    geom_point(mapping = aes(y = z, color = d, shape=d), size = 0.5) +
+    geom_line(aes(y = y)) +
+    geom_line(aes(y = out1$k*dunif(x,0,1)), linetype = 7)+
+    labs(x="z",y=NULL,color="acceptance",shape = "acceptance")+
+    scale_shape_manual(values = c(20,8))
+    #ggsave("unif-rej.pdf",height = 4,width = 4,path = main_path)
+```
+
+然后是正态分布，首先先确定参数：均值跟标准差，这里利用目标函数优化。
+
+```{r}
+# 目标函数
+
+obj<-function(params,x,px)
+{
+    l = 100  # 可调节参数
+    f<-dnorm(x,params[1],params[2])
+    g <- px(x)
+    r <- sum((params[3]*f-g)^2)+l*max(g-params[3]*f)  # 希望k*f跟g接近并且kf恒大于g
+    return(r)
+}
+```
+
+```{r}
+# 求解参数
+
+res<-nlminb(c(1,1,1),obj,x=seq(-1,2,0.001),px=px,
+            lower=c(-Inf,0.0001,0.0001),
+            upper=c(Inf,Inf,Inf))
+res$par
+```
+
+```{r}
+#拟合的效果
+x<-seq(0,1,0.001)
+
+#将估计的参数函数代入原密度函数。
+f<-dnorm(x,res$par[1],res$par[2])
+
+ggplot(data.frame(x=seq(0,1,0.001),y=res$par[3]*f), aes(x))+
+    geom_function(fun=px,aes(color="未归一化\nBeta(2,5)分布"))+
+    geom_line(aes(y=y,color="mq(z)"))+
+    labs(x="z",y=NULL)
+    #ggsave("two-distrutions.pdf",width = 3.5,height = 3.5,path = main_path)
+```
+
+用求解得到的正态分布作为提议分采样：
+
+```{r}
+n <- 3000 # 提议分布样本数
+mu <-  res$par[1]   
+s <- res$par[2]   
+out2 <- rejection_sampling_norm(px,n,mu,s)
+tb2 <- out2$data
+tb2 %>% ggplot(mapping = aes(x = x)) +
+    geom_point(mapping = aes(y = z, color = d, shape = d), size = 0.5) +
+    geom_line(aes(y = y)) +
+    geom_line(aes(y = out2$k*dnorm(x,mu,s)), linetype = 7)+
+    labs(x="z",y=NULL,color="acceptance",shape = "acceptance")+
+    scale_shape_manual(values = c(20,8))
+    #ggsave("norm-rej.pdf",width = 4,height = 4,path = main_path)
+```
+
+可以看到，虽然都能够成功采样，但是大多数都是被拒绝的，采样效率不高。
+
+原因是拒绝采样对提议分布有较高的要求，起码要满足：
+
+- 容易采样
+
+- 形状要跟待采样分布相似，否则效率会很低。（譬如你可以无脑上均匀分布）
+
+它们的接受率分别为：
+
+```{r}
+cat("均匀分布：",mean(tb1$d),"\n")
+cat("正态分布：",mean(tb2$d))
+```
+
+除了对提议分布有较高的要求，还对k值有较高的要求（尽可能小），因为它直接影响了接受率，找到较优的k值也是比较困难的。
+
+## 重要性采样
+
+重要性采样并没有对分布采样，而是直接近似计算分布的期望。
+
+下面以上面的例子Beta(2,5)继续，利用目标函数求解正态分布做提议分布，对px进行重要性采样。
+
+```{r}
+# px为待采样分布
+# n为提议分布生成样本数
+# f为函数
+# 返回E(f(x))，x服从px
+importance_sampling_norm <- function(px,n,f,...)
+{
+    x <- rnorm(n,...)
+    rl <- px(x)/dnorm(x,...)
+    wl <- rl/sum(rl)
+    sum(wl*f(x))
+}
+```
+
+```{r}
+obj<-function(params,x,px)
+{
+    l = 0  # 可调节参数
+    f<-dnorm(x,params[1],params[2])
+    g <- px(x)
+    r <- sum((params[3]*f-g)^2)+l*max(g-params[3]*f)  # 希望k*f跟g接近并且kf恒大于g
+    return(r)
+}
+```
+
+```{r}
+# 求解参数
+
+res<-nlminb(c(0,1,1),obj,x=seq(-1,2,0.001),px=px,
+            lower=c(-Inf,0.0001,0.0001),
+            upper=c(Inf,Inf,Inf))
+res$par
+```
+
+
+
+```{r}
+mu <-  res$par[1]   
+s <- res$par[2] 
+#拟合的效果
+x<-seq(0,1,0.001)
+
+#将估计的参数函数代入原密度函数。
+f<-dnorm(x,res$par[1],res$par[2])
+
+ggplot(data.frame(x=seq(0,1,0.001),y=res$par[3]*f), aes(x))+
+    geom_function(fun=px,aes(color="未归一化\nBeta(2,5)分布"))+
+    geom_line(aes(y=y,color="mq(z)"))+
+    labs(x="z",y=NULL)
+    #ggsave("two-distrutions-SIR.pdf",width = 3.5,height = 3.5,path = main_path)
+```
+
+```{r}
+n <- 100000
+# mu,s由前面得到
+importance_sampling_norm(px,n,f=(function(x){x}),mu,s)
+2/7
+```
+
+这与Beta(2,5)的真实均值2/7近似。
+
+重要性采样的一个好处是不用确定k值。但是只能够得到分布的均值，并且也正和拒绝采样一样，它需要一个匹配的提议分布，并且重要性采样⽅法的⼀个主要的缺点是它具有产⽣任意错误的结果的可能性，并且这种错误无法检测。
+
+举个例子，当提议分布与待采样分布相差甚远时（取正态分布N(5,1)与Beta(2,5)）:
+
+```{r}
+x <- seq(-1,10,0.1)
+plot(x,dnorm(x,5,1)/4,col="red","l",ylab="未归一化密度函数")
+lines(x,px(x))
+```
+
+```{r}
+n <- 100000
+# mu,s由前面得到
+importance_sampling_norm(px,n,f=(function(x){x}),5,1)
+2/7
+```
+
+结果也差的很远，因为在待采样分布取值的密集区域，提议分布几乎为0。
+
+## 采样-重要性-重采样
+
+利用重要性采样得到的权重作为桥梁，构成一个不需要确定k值的采样方法。
+
+还是以Beta(2,5)作为例子，以前面得到的正态分布作为提议分布：
+
+
+```{r}
+# 采样-重要性-重采样
+# px待采样分布
+# L采样样本数
+# ...提议分布的参数
+SIR_norm <- function(px,L,...){
+    x <- rnorm(L,...)  # 先从提议分布采样L个样本
+    rl <- px(x)/dnorm(x,...)
+    wl <- rl/sum(rl)  # 参照重要性采样得到各个样本权重
+    samples <- sample(x,L,TRUE,wl)  # 以权重重采样
+    samples
+}
+```
+
+1. 提议分布对采样的影响
+
+```{r}
+L<- 20000
+p <- tibble(x=seq(-0.1,1,0.001))
+p$y = gamma(7)/(gamma(2)*gamma(5))*px(p$x)
+samples <- tibble(samples=SIR_norm(px,L,mu+0.5,s))  # 均值右移0.5
+samples %>% 
+    ggplot(aes(x=samples,y=..density..))+
+    geom_histogram(bins = 50,color="white")+
+    geom_line(aes(x=x,y=y),p,color="red",size=1,linetype=5)+
+    labs(x="z",y="密度")
+    #ggsave("SIR-q1.pdf",width = 3.5,height = 3.5,path = main_path)
+```
+
+
+```{r}
+L<- 20000
+p <- tibble(x=seq(-0.1,1,0.001))
+p$y = gamma(7)/(gamma(2)*gamma(5))*px(p$x)
+samples <- tibble(samples=SIR_norm(px,L,mu,s))
+samples %>% 
+    ggplot(aes(x=samples,y=..density..))+
+    geom_histogram(bins = 50,color="white")+
+    geom_line(aes(x=x,y=y),p,color="red",size=1,linetype=5)+
+    labs(x="z",y="密度")
+    #ggsave("SIR-q2.pdf",width = 3.5,height = 3.5,path = main_path)
+```
+
+
+
+2.考虑采样样本数对采样的影响
+
+先定义求遍历均值及遍历方差的函数：
+```{r}
+# 输入一维样本序列
+# 输出遍历均值及遍历方差
+ergodic_mean_var <- function(samples){
+    ergodic_mean <- vector("double",length(samples))
+    ergodic_var <- vector("double",length(samples))
+    for (i in seq_along(samples)) {
+        # 初始值
+        if(i==1){
+            ergodic_mean[[i]] = samples[[i]]
+            ergodic_var[[i]] = 0
+        }
+        else{
+            ergodic_mean[[i]] = ergodic_mean[[i-1]]+(samples[[i]]-ergodic_mean[[i-1]])/i
+            ergodic_var[[i]] = (i-1)*(samples[[i]]-ergodic_mean[[i-1]])^2/i^2+(i-1)*ergodic_var[[i-1]]/i
+        }
+    }
+    return(list(ergodic_mean=ergodic_mean,
+                ergodic_var=ergodic_var))
+}
+```
+
+
+
+```{r}
+L = 5000
+samples=SIR_norm(px,L,mu,s)
+tb1 <- ergodic_mean_var(samples)
+tb1 <- as_tibble(tb1)
+supp.labs <- c("遍历均值", "遍历方差") # 这个是我们希望展示出来的标签名
+names(supp.labs) <- c("ergodic_mean", "ergodic_var") # 这个是我们希望隐藏的标签名
+tb1 %>% 
+    mutate(idx=1:n()) %>% 
+    rename(`遍历均值` = ergodic_mean,`遍历方差`=ergodic_var) %>% 
+    pivot_longer(cols = c("遍历均值","遍历方差")) %>% 
+    mutate(real_val = ifelse(name=="遍历均值",2/7,5/4/49)) %>% 
+    ggplot(aes(x=idx))+
+    geom_line(aes(y=value,color="样本分布"))+
+    geom_hline(aes(yintercept = real_val,color="真实分布"))+
+    facet_wrap(~name,scales = "free",labeller = labeller(supp = supp.labs))+
+    labs(x="样本长度",y=NULL)
+    #ggsave("SIR-samples_len.pdf",width = 5.5,height = 3,path = main_path)
+```
+
+
+```{r}
+L = seq(1000,3000,by = 500)
+tb1 <- tibble(L=L,mean=mu,sd=s)
+samples <- pmap(tb1,SIR_norm,px=px) %>% unlist
+L1 = rep(L,L)
+L1 <- factor(L1,levels = as.character(L),ordered=TRUE)
+tb2 <- tibble(L=L1,samples=samples)
+```
+
+
+```{r}
+tb2%>% 
+    ggplot(aes(x=samples,y=..density..))+
+    geom_density(aes(color=L))+
+    geom_line(aes(x=x,y=y,color="正确分布"),data=p,linetype=5,size=1)+
+    labs(x="z",y="密度")
+    #ggsave("SIR-samples-Ls.pdf",width = 4,height = 3.5,path = main_path)
+
+```
+
+
+
+
+
+## 高维分布的局限性
+
+下面用例子说明，上述拒绝采样与重要性采样这两种方法在高维情况下具有较大的局限性。
+
+下面以均匀分布为高斯分布的提议分布，对高斯分布进行拒绝采样。
+
+```{r}
+# px为待采样分布
+# n为提议分布产生样本数
+# min,max为提议分布参数
+# dimension维数
+# 返回list:samples为样本，acc为接受率
+
+highdim_sampling_unif <- function(px,n,dimension,min,max){
+    x <- runif(n*dimension, min, max)  # 生成n*dimension个均匀分布随机数
+    rnames <- paste("n",1:n,sep = "")
+    cnames <- paste("x",1:dimension,sep = "")
+    samples <- matrix(x,n,dimension,dimnames = list(rnames,cnames))  # 行为维度，列为样本
+    y <- apply(samples,1,px,rep(0,dimension),diag(dimension))  # 以各向同性的标准正态分布为例
+    d <- 1/((max-min)^dimension)
+    k = max(y/d)
+    z = runif(n, 0, k*d)
+    idx <- which(z<=y)  # 接受的样本序号
+    samples <- as_tibble(samples) 
+    output <- list(samples=samples[idx,],acc=length(idx)/n)
+    return(output)
+}
+```
+
+```{r}
+# 定义高维正态分布密度函数
+# x为输入点
+# mu为均值向量
+# sig为协方差矩阵
+
+px_muvnorm <- function(x,mu,sig){
+    dimension <- length(x)  # 获取维度
+    # 将x mu转为列向量
+    x <- matrix(x,dimension,1)
+    mu <- matrix(mu,dimension,1)
+    s <- -t(x-mu)%*%solve(sig)%*%(x-mu)/2
+    y <- 1/((2*pi)^(dimension/2)*det(sig)^(1/2))*exp(s)
+    y
+}
+```
+
+用一维情况验证程序的运行情况：
+
+```{r}
+n <- 10000
+x <- seq(-5,5,0.01)
+tb1 <- tibble(x=x,y=dnorm(x))
+out1 <- highdim_sampling_unif(px_muvnorm,n,1,-4,4)
+out1$acc
+out1$samples %>% 
+    ggplot()+
+    geom_histogram(aes(x=x1,y=..density..),bins = 100,color="white")+
+    geom_line(aes(x=x,y=y),tb1,color="red",size=1,linetype=5)
+    
+```
+
+基本上拟合，说明程序没有什么大问题。下面对维度进行考虑：
+
+
+
+
+```{r}
+dimension <- 1:15
+n <- 10000
+out2 <- vector("double",length(dimension))
+for (i in dimension) {
+    out1 <- highdim_sampling_unif(px_muvnorm,n,i,-4,4)
+    out2[[i]] <- out1$acc
+}
+ggplot(tibble(dimension=dimension,acc=out2),aes(dimension,acc))+
+    geom_point()+
+    geom_line()+
+    labs(x="维度",y="接受率")
+    #ggsave("SIR-highdim.pdf",width = 3.5,height = 3.5,path = main_path)
+```
+
+
+可以看到，随着维度的升高，接受率几乎呈指数下降，所以在高维空间里。拒绝采样并不是一个适用的方法。原因很简单，当维度升高，那些边边角角拒绝样本的地方会越来越大的，用n维正方体包含内接n维球做例子，我们看看它们体积比的变化：
+
+```{r}
+# 取半径为1，这个不影响比例
+d <- 1:50
+x <- pi^(d/2)/gamma(d/2+1)  # d维球体积
+y <- 2^d
+plot(d,x/y,"b",pch=19,lty=2,xlab = "维度",ylab="体积比")
+```
+
+同样得到类似的结果。
+
+## MCMC方法
+
+先对M-H算法进行实现，采样二维正态分布，以均匀分布做提议分布。均匀分布以当前状态为中心，自定义步长，为对称分布。
+
+```{r}
+# M-H算法，提议分布为均匀分布
+# px_muvnorm待采样的正态分布
+# n采样样本数
+# dimension维度
+# x0为初值
+# steplen均匀分布步长
+# ...为提议分布的参数
+
+MH_sampling_unif <- function(px_muvnorm,n,dimension,x0,steplen,...){
+    k = 0  # 统计接受次数
+    rnames <- paste("n",1:n,sep = "")
+    cnames <- paste("x",1:dimension,sep = "")
+    # 行为维度，列为样本
+    samples <- matrix(0,nrow = n,ncol = dimension,dimnames = list(rnames,cnames))  
+    samples[1,] <- x0  # 设置初值
+    verdict <- runif(n)  # 用于判断的向量   
+    for (i in 1:(n-1)) {
+        x <- samples[i,] # 获取当前状态
+        y <- runif(dimension,-steplen,steplen)+x  # 生成提议分布样本
+        #print(x)
+        #print(i)
+        #str(samples)
+        A <- min(1,px_muvnorm(y,...)/px_muvnorm(x,...))  # 接受概率
+        # 接受/拒绝样本
+        if(A>verdict[i]){
+            samples[i+1,] <-  y
+            k = k+1
+        }else{
+            samples[i+1,] <-  samples[i,]
+        }
+              
+    }
+    #k/n
+    samples
+}
+```
+
+以一维正态分布做试探：
+
+```{r}
+n <- 20000
+x <- MH_sampling_unif(px_muvnorm,n,1,0,1.5,0,diag(1))
+```
+
+收敛性判断，通过遍历均值判断
+
+```{r}
+y <- ergodic_mean_var(x)
+ggplot(tibble(x=1:n,y=y$ergodic_mean))+
+    geom_line(aes(x,y))+
+    labs(x="样本长度",y="遍历均值")
+    #ggsave("MH-ergodic-mean.pdf",width = 6.5,height = 3.5,path = main_path)
+```
+
+大概5000之后序列趋于平稳，可以认为马尔可夫链收敛了。
+
+```{r}
+samples <- x[-c(1:5000)]
+ggplot(tibble(samples=samples))+
+    geom_histogram(aes(x=samples,y=..density..),bins = 50)+
+    geom_function(fun=dnorm,aes(color="正确分布"),size=1)+
+    labs(x="z",y="密度")
+    #ggsave("MH-hist.pdf",width = 6.5,height = 3.5,path = main_path)
+```
+
+大致符合，可以认为已经收敛到正确的分布。
+
+通过马尔可夫链采样得到的样本相邻之间具有很高的相关性，为了得到近似独立的样本，我们可以将样本按顺序均分为若干份，每份K个样本，然后在每份抽取1个样本使得它们近似独立。
+
+确定K值的一个办法，求K份样本均值间的acf，在$\pm 2/\sqrt{n}$间可以认为它们是白噪声，近似没有相关性。
+
+```{r}
+# 求容量为K每份样本的均值
+# x样本向量
+# k每份样本容量
+# 不能整除的，剩余样本丢弃
+k_samples_mean <- function(x,k){
+    l <- length(x)
+    r <- floor(l/k)  # 行数，份数
+    y <- matrix(x[1:(k*r)],r,k,byrow = T)
+    m <- apply(y, 1, mean)
+    m
+}
+```
+
+对上面得到的样本确定K值：
+
+```{r}
+k <- seq(10,100,10)
+acf1 <- vector("double",length(k))
+mlen <- vector("double",length(k))
+for (i in seq_along(k)) {
+    m <- k_samples_mean(samples,k[[i]])
+    ac <- acf(m,lag.max = 1,plot = FALSE)
+    acf1[[i]] <- ac$acf[2]  # 1阶acf
+    mlen[[i]] <- length(m)  # 均值向量长度
+}
+tb3 <- tibble(k,acf1,mlen)
+tb3 %>% 
+    mutate(mu=2/sqrt(mlen),md=-mu) %>% # 置信上下界
+    mutate(acc=(acf1>=md & acf1<=mu)) %>% 
+    ggplot(aes(k,acf1))+
+    geom_segment(aes(xend=k,yend=0))+
+    geom_point(aes(k,mu,color=acc,shape=acc))+
+    geom_point(aes(k,md,color=acc,shape=acc))+
+    scale_x_continuous(breaks = k)+
+    labs(x="K值",y="样本间自相关系数")
+    #ggsave("MH-acf.pdf",width = 6.5,height = 3.5,path = main_path)
+```
+
+可以看到，可以取K=40，此时均值向量长度为375。
+
+下面考虑步长跟初始点对收敛速度的影响。
+
+先是步长对收敛速度的影响：
+
+```{r}
+n <- 20000  # 采样数
+steplen <- seq(0.1,by = 0.5,length.out = 4)  # 步长
+#steplen <- 0.5
+y <- matrix(0,n,length(steplen))
+for (i in seq_along(steplen)) {
+    y[,i] <- MH_sampling_unif(px_muvnorm,n,1,0,steplen[i],0,matrix(1,1,1))
+}
+x <- apply(y, 2, accumulate,`+`)/(1:n)
+y <- as_tibble(x)
+```
+
+```{r}
+y %>% 
+    rename(`0.1`=V1,`0.6`=V2,`1.1`=V3,`1.6`=V4) %>% 
+    mutate(idx=1:n()) %>% 
+    #dplyr::select(-`0.1`) %>%
+    pivot_longer(cols = -idx, names_to="steplen", values_to="ergodic_mean")%>%  
+    rename(`步长`=steplen) %>% 
+    ggplot()+
+    geom_line(aes(idx,ergodic_mean,color=`步长`))+
+    facet_wrap(~`步长`,ncol = 2)+
+    labs(x="样本长度",y="遍历均值")
+    #ggsave("MH-steplen-mean.pdf",width = 6.5,height = 4.5,path = main_path)
+```
+
+可以看到，当步长较小时，遍历均值长时间不稳定，意味着长时间马尔可夫链都没有收敛，这是因为步长过小，遍历状态空间的形式是缓慢的随机游走状态。但是，如果步长太大，由接受率公式可以得到拒绝率会增大。
+
+步长与接受率的影响：
+
+```{r}
+# M-H算法，提议分布为均匀分布
+# px_muvnorm待采样的正态分布
+# n采样样本数
+# dimension维度
+# x0为初值
+# steplen均匀分布步长
+# ...为提议分布的参数
+
+MH_sampling_unif2 <- function(px_muvnorm,n,dimension,x0,steplen,...){
+    k = 0  # 统计接受次数
+    rnames <- paste("n",1:n,sep = "")
+    cnames <- paste("x",1:dimension,sep = "")
+    # 行为维度，列为样本
+    samples <- matrix(0,nrow = n,ncol = dimension,dimnames = list(rnames,cnames))  
+    samples[1,] <- x0  # 设置初值
+    verdict <- runif(n)  # 用于判断的向量   
+    for (i in 1:(n-1)) {
+        x <- samples[i,] # 获取当前状态
+        y <- runif(dimension,-steplen,steplen)+x  # 生成提议分布样本
+        #print(x)
+        #print(i)
+        #str(samples)
+        A <- min(1,px_muvnorm(y,...)/px_muvnorm(x,...))  # 接受概率
+        # 接受/拒绝样本
+        if(A>verdict[i]){
+            samples[i+1,] <-  y
+            k = k+1
+        }else{
+            samples[i+1,] <-  samples[i,]
+        }
+              
+    }
+    k/n
+    #samples
+}
+```
+
+```{r}
+n <- 20000  # 采样数
+steplen <- seq(0.1,3.1,by = 0.5)  # 步长
+#steplen <- 0.5
+y <- vector("double",length(steplen))
+for (i in seq_along(steplen)) {
+    y[[i]] <- MH_sampling_unif2(px_muvnorm,n,1,0,steplen[i],0,matrix(1,1,1))
+}
+    
+```
+```{r}
+ggplot(tibble(steplen,acc=y),aes(steplen,acc))+
+    geom_point()+
+    geom_line()+
+    scale_x_continuous(breaks = steplen)+
+    labs(x="步长",y="接受率")
+    #ggsave("MH-steplen-acc.pdf",width = 6.5,height = 3.5,path = main_path)
+```
+
+
+高斯分布的相关系数对收敛性的影响：
+```{r}
+n <- 20000  # 采样数
+r <- seq(0,1,0.3)  # 相关系数
+steplen <- 1.5 # 步长
+rnames <- paste("n",1:n,sep = "")
+cnames <- str_c(r)
+mm <- matrix(0,n,length(r),dimnames = list(rnames,cnames))
+y <- matrix(0,n,2)
+for (i in seq_along(r)) {
+    y <- MH_sampling_unif(px_muvnorm,n,2,c(0,0),steplen,c(0,0),
+                              matrix(c(1,r[[i]],r[[i]],1),2,2))
+    y <- apply(y, 2, accumulate,`+`)/(1:n)
+    y <- y^2
+    mm[,i] = sqrt(y[,1]+y[,2])
+}
+y <- as_tibble(mm)
+```
+
+```{r}
+y %>% 
+    mutate(idx=1:n()) %>% 
+    #dplyr::select(-`0.1`) %>%
+    pivot_longer(cols = -idx, names_to="rho", values_to="ergodic_mean")%>%  
+    rename(`相关系数`=rho) %>% 
+    ggplot()+
+    geom_line(aes(idx,ergodic_mean,color=`相关系数`))+
+    facet_wrap(~`相关系数`,ncol = 2)+
+    labs(x="样本长度",y="遍历均值差")
+    #ggsave("MH-rho-mean.pdf",width = 6.5,height = 4.5,path = main_path)
+```
+
+维度对接受率的影响：
+```{r}
+n <- 20000  # 采样数
+dim <- 1:15  # 维度
+steplen=1.5  # 步长
+y <- vector("double",length(dim))
+for (i in seq_along(dim)) {
+    y[[i]] <- MH_sampling_unif2(px_muvnorm,n,dimension = i,
+                                rep(0,i),steplen,rep(0,i),diag(i))
+}
+    
+```
+```{r}
+ggplot(tibble(dim,acc=y),aes(dim,acc))+
+    geom_point()+
+    geom_line()+
+    scale_x_continuous(breaks = dim)+
+    labs(x="维数",y="接受率")
+    #ggsave("MH-dim-acc.pdf",width = 6.5,height = 3.5,path = main_path)
+```
+
+
+
+下面对二维正态分布进行采样，取步长为1.5。
+
+```{r}
+n <- 20000  # 采样数
+r <- 0.4  # 相关系数
+steplen <- 1.5 # 步长
+samples <- MH_sampling_unif(px_muvnorm,n,2,c(0,0),steplen,c(0,0),matrix(c(1,r,r,1),2,2))
+```
+
+得到真实的分布曲线：
+
+```{r}
+x1 <- seq(-3,3,length.out = 200)
+x2 <- x1
+y1 <- rep(x1,rep(length(x2),length(x1)))
+y2 <- rep(x2,length(x1))
+tb2 <- tibble(y1,y2)
+tb2["y"] <- apply(tb2,1,px_muvnorm,mu=c(0,0),sig = matrix(c(1,r,r,1),2,2))
+```
+
+比较一下：
+
+```{r}
+n1 <- 5000  # 剔除前面的样本数
+tb1 <- as_tibble(samples[-c(1:n1),])
+tb1 %>% 
+    ggplot(aes(x=x1,y=x2))+
+    geom_point(color="green3",alpha = 0.1,size=0.5)+
+    stat_density_2d(aes(color="sampling"))+
+    geom_contour(aes(y1,y2,z=y,color="correct"),data = tb2)+
+    scale_colour_manual(values = c("blue","red"))
+```
+
+```{r}
+d = 9
+a <- MH_sampling_unif(px_muvnorm,1000,d,rep(0,d),0.5,rep(0,d),diag(d))
+```
+
+
+大致一致，可以认为收敛到了正确的分布。
+
+下面对Gibbs采样进行编码实现，采样二维正态分布样本。
+
+Gibbs采样常用于采样后验分布，假设现在有后验分布$(\theta|y)\sim \mathcal{N}(y,\Sigma)$，
+
+$$
+\Sigma = \begin{bmatrix}
+        \sigma_1^2 & \rho\sigma_1\sigma_2\\
+        \rho\sigma_1\sigma_2\ & \sigma_2^2
+    \end{bmatrix}
+$$
+
+Gibbs采样要求在下面的条件分布中交替采样：
+
+$$
+    (\theta^t_1|\theta_2^{t-1},y)\sim\mathcal{N}\left(y_1+\rho \frac{\sigma_1}{\sigma_2}(\theta_2^{t-1}-y_2),\sigma_1^2(1-\rho^2)\right)
+$$
+$$
+    (\theta^t_2|\theta_1^{t},y)\sim\mathcal{N}\left(y_2+\rho \frac{\sigma_2}{\sigma_1}(\theta_1^{t}-y_1),\sigma_2^2(1-\rho^2)\right)
+$$
+
+
+下面给出采样二维高斯分布的Gibbs采样算法：
+
+```{r}
+# 二维高斯分布的Gibbs采样
+# mu 均值向量
+# sig 协方差阵
+# n 样本数
+# x0 初始值
+
+gibbs_sampling_norm2 <- function(mu, sig, n, x0){
+    # 获取相应分量
+    a <- sqrt(sig[1,1]) #sigma1
+    b <- sqrt(sig[2,2]) #sigma2
+    rho <- sig[1,2]/a/b
+    # 先定义样本矩阵
+    rnames <- paste("n",1:n,sep = "")
+    cnames <- paste("x",1:2,sep = "")
+    # 行为维度，列为样本
+    samples <- matrix(0,nrow = n,ncol = 2,dimnames = list(rnames,cnames))  
+    samples[1,] = x0  # 初始化
+    for (i in 2:n) {
+        samples[i,1] <- rnorm(1,mu[1]+rho*a*(samples[i-1,2]-mu[2])/b,
+                              a*sqrt(1-rho^2))
+        samples[i,2] <- rnorm(1,mu[2]+rho*b*(samples[i,1]-mu[1])/a,
+                              b*sqrt(1-rho^2))
+    }
+    samples
+}
+```
+
+以$y=[1,2],\Sigma=[1 ,-0.7;-0.7,2]$为例采样。
+
+```{r}
+n <- 10000 # 样本
+sig <- matrix(c(1,-0.7,-0.7,2),2,2)  # 协方差阵
+mu=c(1,2)
+samples <- gibbs_sampling_norm2(mu,sig=sig,n,c(0,0))
+```
+
+遍历均值差：
+```{r}
+y <- apply(samples, 2, accumulate,`+`)/(1:n)
+y[,1] = y[,1]-mu[1]
+y[,2] = y[,2]-mu[2]
+y <- y^2
+mm = sqrt(y[,1]+y[,2])
+y <- as_tibble(mm)
+```
+
+```{r}
+y %>% 
+    mutate(idx=1:n()) %>% 
+    #dplyr::select(-`0.1`) %>%
+    ggplot()+
+    geom_line(aes(idx,value))+
+    labs(x="样本长度",y="遍历均值差")
+    #ggsave("gibbs-mean.pdf",width = 6.5,height = 3.5,path = main_path)
+```
+
+
+
+得到真实的分布曲线：
+
+```{r}
+x1 <- seq(-2,3.5,length.out = 200)
+x2 <- seq(-2,5,length.out = 200)
+y1 <- rep(x1,rep(length(x2),length(x1)))
+y2 <- rep(x2,length(x1))
+tb2 <- tibble(y1,y2)
+tb2["y"] <- apply(tb2,1,px_muvnorm,mu=mu,sig=sig)
+```
+
+
+比较一下：
+
+```{r}
+n1 <- 2500  # 剔除前面的样本数
+tb1 <- as_tibble(samples)
+tb1 %>% 
+    mutate(idx = 1:n()) %>% 
+    filter(idx>n1) %>% 
+    ggplot(aes(x=x1,y=x2))+
+    geom_point(aes(shape="采样样本点"),color="green3",alpha = 0.3,size=0.5)+
+    stat_density_2d(aes(color="采样分布"))+
+    geom_contour(aes(y1,y2,z=y,color="正确分布"),
+                 data = tb2)+
+    scale_colour_manual(values = c("blue","red"))+
+    labs(x=TeX("$\\theta_1$"),y=TeX("$\\theta_2$"))
+    #ggsave("gibbs-samples.pdf",width = 6.5,height = 3.5,path = main_path)
+
+    #stat_density_2d(aes(x=V1,y=V2,color="mass_sampling"),as_tibble(y))
+```
+
+
+大致一致，可以认为gibbs采样得到了近似正确的分布，证明了算法的有效性。
+
+下面展示gibbs采样的随机游走路径：
+
+```{r}
+x1 <- rep(tb1$x1,rep(2,nrow(tb1)))
+x2 <- rep(tb1$x2,rep(2,nrow(tb1)))
+x1 <- x1[-1]
+x1[length(x1)+1] <- x1[length(x1)]
+tb3 <- tibble(x1,x2)
+
+n1 <- 50  #选择的样本数
+tb3 %>% 
+    mutate(idx=1:n()) %>% 
+    filter(idx<=n1) %>% 
+    ggplot(aes(x1,x2))+
+    geom_path()+
+    geom_point(aes(x1[1],x2[1]),shape=15,size=3)+
+    labs(title = paste("n =",n1),x=TeX("$\\theta_1$"),y=TeX("$\\theta_2$"))
+    #ggsave("gibbs-path-1.pdf",width = 3.5,height = 4,path = main_path)
+
+n1 <- 1000
+tb3 %>% 
+    mutate(idx=1:n()) %>% 
+    filter(idx<=n1) %>% 
+    ggplot(aes(x1,x2))+
+    geom_path()+
+    geom_point(aes(x1[1],x2[1]),shape=15,size=3)+
+    labs(title = paste("n =",n1),x=TeX("$\\theta_1$"),y=TeX("$\\theta_2$"))
+    #ggsave("gibbs-path-2.pdf",width = 3.5,height = 4,path = main_path)
+```
+
+```{r}
+sessionInfo()
+```
+

@@ -1,0 +1,779 @@
+---
+title: 采样方法
+author: Huang
+date: '2021-05-12'
+slug: samping-methods
+categories:
+  - Statistics
+tags:
+  - R
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<div id="前言" class="section level1">
+<h1>前言</h1>
+<p>利用R实现一些采样方法，分析各个方法的一些特点。</p>
+<pre class="r"><code>library(tidyverse)
+library(MASS)
+library(latex2exp)
+library(showtext)
+library(Cairo)
+
+library(nloptr)
+
+set.seed(1024)</code></pre>
+<pre class="r"><code>knitr::opts_chunk$set(
+  out.width = &quot;70%&quot;,
+  fig.align = &#39;center&#39;,
+  fig.width = 6,
+  fig.asp = 0.618  # 1 / phi
+)</code></pre>
+<pre class="r"><code># 设置ggplot的主题
+showtext_auto()
+
+old &lt;-theme_light()
+theme_set(old)
+
+#main_path = &quot;&quot;</code></pre>
+<div id="拒绝采样" class="section level2">
+<h2>拒绝采样</h2>
+<p>拒绝采样类似于求pi的做法，在正方形上随机均匀采样，用落在内接圆内的点的个数除以总的点个数，等于内接圆与正方形的面积之比。</p>
+<p>同样的，拒绝采样也需要一个类似于正方形的辅助工具，那就是提议分布，再利用类似的接受-拒绝准则，使得样本点能在待采样分布密度函数曲线内均匀分布。</p>
+<p>假设我们需要Beta(2,5)中采样，先定义它的未归一化密度函数：</p>
+<pre class="r"><code># 需要采样的分布
+
+px &lt;- function(x){
+    y &lt;- ifelse(x&gt;=0&amp;x&lt;=1,x*(1-x)^4,0)
+}
+ggplot()+
+    xlim(-0.5,1)+
+    geom_function(fun=px)+
+    labs(title = &quot;未归一化的Beta(2,5)分布&quot;,y=TeX(&quot;$\\tilde{p}(z)$&quot;),
+         x=&quot;z&quot;)</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-4-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;Beta-distrution.pdf&quot;,width = 3.5,height = 3.5,path = main_path)</code></pre>
+<p>分别以均匀分布、正态分布为提议分布，它们的k倍能够包络待采样分布。下面的k并不一定取到最小。</p>
+<pre class="r"><code># 提议分布为均匀分布
+# px为密度函数,
+# n不是生成px的样本数，而是提议分布的样本数
+rejection_sampling_unit &lt;- function(px, n, ...){
+    x &lt;- runif(n, ...)  # 生成n个随机数
+    y = px(x)
+    d &lt;- dunif(x, ...)
+    k = max(y/d)
+    z = runif(n, 0, k*d)
+    output = list(data = tibble(x,y,z,d=(z&lt;=y)),
+                 samples = x[z&lt;=y],
+                 k = k)
+    return(output)
+}    
+
+# 提议分布为正态分布
+
+rejection_sampling_norm &lt;- function(px, n, ...){
+    x &lt;- rnorm(n, ...)  # 生成n个随机数
+    y &lt;- px(x)
+    d &lt;- dnorm(x,...)
+    k &lt;- max(y/d)
+    z &lt;- runif(n, 0, k*d)
+    output = list(data = tibble(x,y,z,d=(z&lt;=y)),
+                 samples = x[z&lt;=y],
+                 k = k)
+    return(output)
+} </code></pre>
+<p>首先的均匀分布，参数为[0,1]</p>
+<pre class="r"><code>n &lt;- 10000 
+out1 &lt;- rejection_sampling_unit(px, n ,0, 1)
+tb1 &lt;- out1$data
+tb1 %&gt;% ggplot(mapping = aes(x = x)) +
+    geom_point(mapping = aes(y = z, color = d, shape=d), size = 0.5) +
+    geom_line(aes(y = y)) +
+    geom_line(aes(y = out1$k*dunif(x,0,1)), linetype = 7)+
+    labs(x=&quot;z&quot;,y=NULL,color=&quot;acceptance&quot;,shape = &quot;acceptance&quot;)+
+    scale_shape_manual(values = c(20,8))</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-6-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;unif-rej.pdf&quot;,height = 4,width = 4,path = main_path)</code></pre>
+<p>然后是正态分布，首先先确定参数：均值跟标准差，这里利用目标函数优化。</p>
+<pre class="r"><code># 目标函数
+
+obj&lt;-function(params,x,px)
+{
+    l = 100  # 可调节参数
+    f&lt;-dnorm(x,params[1],params[2])
+    g &lt;- px(x)
+    r &lt;- sum((params[3]*f-g)^2)+l*max(g-params[3]*f)  # 希望k*f跟g接近并且kf恒大于g
+    return(r)
+}</code></pre>
+<pre class="r"><code># 求解参数
+
+res&lt;-nlminb(c(1,1,1),obj,x=seq(-1,2,0.001),px=px,
+            lower=c(-Inf,0.0001,0.0001),
+            upper=c(Inf,Inf,Inf))
+res$par</code></pre>
+<pre><code>## [1] 0.21980690 0.20788329 0.04327457</code></pre>
+<pre class="r"><code>#拟合的效果
+x&lt;-seq(0,1,0.001)
+
+#将估计的参数函数代入原密度函数。
+f&lt;-dnorm(x,res$par[1],res$par[2])
+
+ggplot(data.frame(x=seq(0,1,0.001),y=res$par[3]*f), aes(x))+
+    geom_function(fun=px,aes(color=&quot;未归一化\nBeta(2,5)分布&quot;))+
+    geom_line(aes(y=y,color=&quot;mq(z)&quot;))+
+    labs(x=&quot;z&quot;,y=NULL)</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-9-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;two-distrutions.pdf&quot;,width = 3.5,height = 3.5,path = main_path)</code></pre>
+<p>用求解得到的正态分布作为提议分采样：</p>
+<pre class="r"><code>n &lt;- 3000 # 提议分布样本数
+mu &lt;-  res$par[1]   
+s &lt;- res$par[2]   
+out2 &lt;- rejection_sampling_norm(px,n,mu,s)
+tb2 &lt;- out2$data
+tb2 %&gt;% ggplot(mapping = aes(x = x)) +
+    geom_point(mapping = aes(y = z, color = d, shape = d), size = 0.5) +
+    geom_line(aes(y = y)) +
+    geom_line(aes(y = out2$k*dnorm(x,mu,s)), linetype = 7)+
+    labs(x=&quot;z&quot;,y=NULL,color=&quot;acceptance&quot;,shape = &quot;acceptance&quot;)+
+    scale_shape_manual(values = c(20,8))</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-10-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;norm-rej.pdf&quot;,width = 4,height = 4,path = main_path)</code></pre>
+<p>可以看到，虽然都能够成功采样，但是大多数都是被拒绝的，采样效率不高。</p>
+<p>原因是拒绝采样对提议分布有较高的要求，起码要满足：</p>
+<ul>
+<li><p>容易采样</p></li>
+<li><p>形状要跟待采样分布相似，否则效率会很低。（譬如你可以无脑上均匀分布）</p></li>
+</ul>
+<p>它们的接受率分别为：</p>
+<pre class="r"><code>cat(&quot;均匀分布：&quot;,mean(tb1$d),&quot;\n&quot;)</code></pre>
+<pre><code>## 均匀分布： 0.4092</code></pre>
+<pre class="r"><code>cat(&quot;正态分布：&quot;,mean(tb2$d))</code></pre>
+<pre><code>## 正态分布： 0.7503333</code></pre>
+<p>除了对提议分布有较高的要求，还对k值有较高的要求（尽可能小），因为它直接影响了接受率，找到较优的k值也是比较困难的。</p>
+</div>
+<div id="重要性采样" class="section level2">
+<h2>重要性采样</h2>
+<p>重要性采样并没有对分布采样，而是直接近似计算分布的期望。</p>
+<p>下面以上面的例子Beta(2,5)继续，利用目标函数求解正态分布做提议分布，对px进行重要性采样。</p>
+<pre class="r"><code># px为待采样分布
+# n为提议分布生成样本数
+# f为函数
+# 返回E(f(x))，x服从px
+importance_sampling_norm &lt;- function(px,n,f,...)
+{
+    x &lt;- rnorm(n,...)
+    rl &lt;- px(x)/dnorm(x,...)
+    wl &lt;- rl/sum(rl)
+    sum(wl*f(x))
+}</code></pre>
+<pre class="r"><code>obj&lt;-function(params,x,px)
+{
+    l = 0  # 可调节参数
+    f&lt;-dnorm(x,params[1],params[2])
+    g &lt;- px(x)
+    r &lt;- sum((params[3]*f-g)^2)+l*max(g-params[3]*f)  # 希望k*f跟g接近并且kf恒大于g
+    return(r)
+}</code></pre>
+<pre class="r"><code># 求解参数
+
+res&lt;-nlminb(c(0,1,1),obj,x=seq(-1,2,0.001),px=px,
+            lower=c(-Inf,0.0001,0.0001),
+            upper=c(Inf,Inf,Inf))
+res$par</code></pre>
+<pre><code>## [1] 0.25353056 0.16013265 0.03332272</code></pre>
+<pre class="r"><code>mu &lt;-  res$par[1]   
+s &lt;- res$par[2] 
+#拟合的效果
+x&lt;-seq(0,1,0.001)
+
+#将估计的参数函数代入原密度函数。
+f&lt;-dnorm(x,res$par[1],res$par[2])
+
+ggplot(data.frame(x=seq(0,1,0.001),y=res$par[3]*f), aes(x))+
+    geom_function(fun=px,aes(color=&quot;未归一化\nBeta(2,5)分布&quot;))+
+    geom_line(aes(y=y,color=&quot;mq(z)&quot;))+
+    labs(x=&quot;z&quot;,y=NULL)</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-15-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;two-distrutions-SIR.pdf&quot;,width = 3.5,height = 3.5,path = main_path)</code></pre>
+<pre class="r"><code>n &lt;- 100000
+# mu,s由前面得到
+importance_sampling_norm(px,n,f=(function(x){x}),mu,s)</code></pre>
+<pre><code>## [1] 0.2858161</code></pre>
+<pre class="r"><code>2/7</code></pre>
+<pre><code>## [1] 0.2857143</code></pre>
+<p>这与Beta(2,5)的真实均值2/7近似。</p>
+<p>重要性采样的一个好处是不用确定k值。但是只能够得到分布的均值，并且也正和拒绝采样一样，它需要一个匹配的提议分布，并且重要性采样⽅法的⼀个主要的缺点是它具有产⽣任意错误的结果的可能性，并且这种错误无法检测。</p>
+<p>举个例子，当提议分布与待采样分布相差甚远时（取正态分布N(5,1)与Beta(2,5)）:</p>
+<pre class="r"><code>x &lt;- seq(-1,10,0.1)
+plot(x,dnorm(x,5,1)/4,col=&quot;red&quot;,&quot;l&quot;,ylab=&quot;未归一化密度函数&quot;)
+lines(x,px(x))</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-17-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>n &lt;- 100000
+# mu,s由前面得到
+importance_sampling_norm(px,n,f=(function(x){x}),5,1)</code></pre>
+<pre><code>## [1] 0.8268688</code></pre>
+<pre class="r"><code>2/7</code></pre>
+<pre><code>## [1] 0.2857143</code></pre>
+<p>结果也差的很远，因为在待采样分布取值的密集区域，提议分布几乎为0。</p>
+</div>
+<div id="采样-重要性-重采样" class="section level2">
+<h2>采样-重要性-重采样</h2>
+<p>利用重要性采样得到的权重作为桥梁，构成一个不需要确定k值的采样方法。</p>
+<p>还是以Beta(2,5)作为例子，以前面得到的正态分布作为提议分布：</p>
+<pre class="r"><code># 采样-重要性-重采样
+# px待采样分布
+# L采样样本数
+# ...提议分布的参数
+SIR_norm &lt;- function(px,L,...){
+    x &lt;- rnorm(L,...)  # 先从提议分布采样L个样本
+    rl &lt;- px(x)/dnorm(x,...)
+    wl &lt;- rl/sum(rl)  # 参照重要性采样得到各个样本权重
+    samples &lt;- sample(x,L,TRUE,wl)  # 以权重重采样
+    samples
+}</code></pre>
+<ol style="list-style-type: decimal">
+<li>提议分布对采样的影响</li>
+</ol>
+<pre class="r"><code>L&lt;- 20000
+p &lt;- tibble(x=seq(-0.1,1,0.001))
+p$y = gamma(7)/(gamma(2)*gamma(5))*px(p$x)
+samples &lt;- tibble(samples=SIR_norm(px,L,mu+0.5,s))  # 均值右移0.5
+samples %&gt;% 
+    ggplot(aes(x=samples,y=..density..))+
+    geom_histogram(bins = 50,color=&quot;white&quot;)+
+    geom_line(aes(x=x,y=y),p,color=&quot;red&quot;,size=1,linetype=5)+
+    labs(x=&quot;z&quot;,y=&quot;密度&quot;)</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-20-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;SIR-q1.pdf&quot;,width = 3.5,height = 3.5,path = main_path)</code></pre>
+<pre class="r"><code>L&lt;- 20000
+p &lt;- tibble(x=seq(-0.1,1,0.001))
+p$y = gamma(7)/(gamma(2)*gamma(5))*px(p$x)
+samples &lt;- tibble(samples=SIR_norm(px,L,mu,s))
+samples %&gt;% 
+    ggplot(aes(x=samples,y=..density..))+
+    geom_histogram(bins = 50,color=&quot;white&quot;)+
+    geom_line(aes(x=x,y=y),p,color=&quot;red&quot;,size=1,linetype=5)+
+    labs(x=&quot;z&quot;,y=&quot;密度&quot;)</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-21-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;SIR-q2.pdf&quot;,width = 3.5,height = 3.5,path = main_path)</code></pre>
+<p>2.考虑采样样本数对采样的影响</p>
+<p>先定义求遍历均值及遍历方差的函数：</p>
+<pre class="r"><code># 输入一维样本序列
+# 输出遍历均值及遍历方差
+ergodic_mean_var &lt;- function(samples){
+    ergodic_mean &lt;- vector(&quot;double&quot;,length(samples))
+    ergodic_var &lt;- vector(&quot;double&quot;,length(samples))
+    for (i in seq_along(samples)) {
+        # 初始值
+        if(i==1){
+            ergodic_mean[[i]] = samples[[i]]
+            ergodic_var[[i]] = 0
+        }
+        else{
+            ergodic_mean[[i]] = ergodic_mean[[i-1]]+(samples[[i]]-ergodic_mean[[i-1]])/i
+            ergodic_var[[i]] = (i-1)*(samples[[i]]-ergodic_mean[[i-1]])^2/i^2+(i-1)*ergodic_var[[i-1]]/i
+        }
+    }
+    return(list(ergodic_mean=ergodic_mean,
+                ergodic_var=ergodic_var))
+}</code></pre>
+<pre class="r"><code>L = 5000
+samples=SIR_norm(px,L,mu,s)
+tb1 &lt;- ergodic_mean_var(samples)
+tb1 &lt;- as_tibble(tb1)
+supp.labs &lt;- c(&quot;遍历均值&quot;, &quot;遍历方差&quot;) # 这个是我们希望展示出来的标签名
+names(supp.labs) &lt;- c(&quot;ergodic_mean&quot;, &quot;ergodic_var&quot;) # 这个是我们希望隐藏的标签名
+tb1 %&gt;% 
+    mutate(idx=1:n()) %&gt;% 
+    rename(`遍历均值` = ergodic_mean,`遍历方差`=ergodic_var) %&gt;% 
+    pivot_longer(cols = c(&quot;遍历均值&quot;,&quot;遍历方差&quot;)) %&gt;% 
+    mutate(real_val = ifelse(name==&quot;遍历均值&quot;,2/7,5/4/49)) %&gt;% 
+    ggplot(aes(x=idx))+
+    geom_line(aes(y=value,color=&quot;样本分布&quot;))+
+    geom_hline(aes(yintercept = real_val,color=&quot;真实分布&quot;))+
+    facet_wrap(~name,scales = &quot;free&quot;,labeller = labeller(supp = supp.labs))+
+    labs(x=&quot;样本长度&quot;,y=NULL)</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-23-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;SIR-samples_len.pdf&quot;,width = 5.5,height = 3,path = main_path)</code></pre>
+<pre class="r"><code>L = seq(1000,3000,by = 500)
+tb1 &lt;- tibble(L=L,mean=mu,sd=s)
+samples &lt;- pmap(tb1,SIR_norm,px=px) %&gt;% unlist
+L1 = rep(L,L)
+L1 &lt;- factor(L1,levels = as.character(L),ordered=TRUE)
+tb2 &lt;- tibble(L=L1,samples=samples)</code></pre>
+<pre class="r"><code>tb2%&gt;% 
+    ggplot(aes(x=samples,y=..density..))+
+    geom_density(aes(color=L))+
+    geom_line(aes(x=x,y=y,color=&quot;正确分布&quot;),data=p,linetype=5,size=1)+
+    labs(x=&quot;z&quot;,y=&quot;密度&quot;)</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-25-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;SIR-samples-Ls.pdf&quot;,width = 4,height = 3.5,path = main_path)</code></pre>
+</div>
+<div id="高维分布的局限性" class="section level2">
+<h2>高维分布的局限性</h2>
+<p>下面用例子说明，上述拒绝采样与重要性采样这两种方法在高维情况下具有较大的局限性。</p>
+<p>下面以均匀分布为高斯分布的提议分布，对高斯分布进行拒绝采样。</p>
+<pre class="r"><code># px为待采样分布
+# n为提议分布产生样本数
+# min,max为提议分布参数
+# dimension维数
+# 返回list:samples为样本，acc为接受率
+
+highdim_sampling_unif &lt;- function(px,n,dimension,min,max){
+    x &lt;- runif(n*dimension, min, max)  # 生成n*dimension个均匀分布随机数
+    rnames &lt;- paste(&quot;n&quot;,1:n,sep = &quot;&quot;)
+    cnames &lt;- paste(&quot;x&quot;,1:dimension,sep = &quot;&quot;)
+    samples &lt;- matrix(x,n,dimension,dimnames = list(rnames,cnames))  # 行为维度，列为样本
+    y &lt;- apply(samples,1,px,rep(0,dimension),diag(dimension))  # 以各向同性的标准正态分布为例
+    d &lt;- 1/((max-min)^dimension)
+    k = max(y/d)
+    z = runif(n, 0, k*d)
+    idx &lt;- which(z&lt;=y)  # 接受的样本序号
+    samples &lt;- as_tibble(samples) 
+    output &lt;- list(samples=samples[idx,],acc=length(idx)/n)
+    return(output)
+}</code></pre>
+<pre class="r"><code># 定义高维正态分布密度函数
+# x为输入点
+# mu为均值向量
+# sig为协方差矩阵
+
+px_muvnorm &lt;- function(x,mu,sig){
+    dimension &lt;- length(x)  # 获取维度
+    # 将x mu转为列向量
+    x &lt;- matrix(x,dimension,1)
+    mu &lt;- matrix(mu,dimension,1)
+    s &lt;- -t(x-mu)%*%solve(sig)%*%(x-mu)/2
+    y &lt;- 1/((2*pi)^(dimension/2)*det(sig)^(1/2))*exp(s)
+    y
+}</code></pre>
+<p>用一维情况验证程序的运行情况：</p>
+<pre class="r"><code>n &lt;- 10000
+x &lt;- seq(-5,5,0.01)
+tb1 &lt;- tibble(x=x,y=dnorm(x))
+out1 &lt;- highdim_sampling_unif(px_muvnorm,n,1,-4,4)
+out1$acc</code></pre>
+<pre><code>## [1] 0.3065</code></pre>
+<pre class="r"><code>out1$samples %&gt;% 
+    ggplot()+
+    geom_histogram(aes(x=x1,y=..density..),bins = 100,color=&quot;white&quot;)+
+    geom_line(aes(x=x,y=y),tb1,color=&quot;red&quot;,size=1,linetype=5)</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-28-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<p>基本上拟合，说明程序没有什么大问题。下面对维度进行考虑：</p>
+<pre class="r"><code>dimension &lt;- 1:15
+n &lt;- 10000
+out2 &lt;- vector(&quot;double&quot;,length(dimension))
+for (i in dimension) {
+    out1 &lt;- highdim_sampling_unif(px_muvnorm,n,i,-4,4)
+    out2[[i]] &lt;- out1$acc
+}
+ggplot(tibble(dimension=dimension,acc=out2),aes(dimension,acc))+
+    geom_point()+
+    geom_line()+
+    labs(x=&quot;维度&quot;,y=&quot;接受率&quot;)</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-29-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;SIR-highdim.pdf&quot;,width = 3.5,height = 3.5,path = main_path)</code></pre>
+<p>可以看到，随着维度的升高，接受率几乎呈指数下降，所以在高维空间里。拒绝采样并不是一个适用的方法。原因很简单，当维度升高，那些边边角角拒绝样本的地方会越来越大的，用n维正方体包含内接n维球做例子，我们看看它们体积比的变化：</p>
+<pre class="r"><code># 取半径为1，这个不影响比例
+d &lt;- 1:50
+x &lt;- pi^(d/2)/gamma(d/2+1)  # d维球体积
+y &lt;- 2^d
+plot(d,x/y,&quot;b&quot;,pch=19,lty=2,xlab = &quot;维度&quot;,ylab=&quot;体积比&quot;)</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-30-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<p>同样得到类似的结果。</p>
+</div>
+<div id="mcmc方法" class="section level2">
+<h2>MCMC方法</h2>
+<p>先对M-H算法进行实现，采样二维正态分布，以均匀分布做提议分布。均匀分布以当前状态为中心，自定义步长，为对称分布。</p>
+<pre class="r"><code># M-H算法，提议分布为均匀分布
+# px_muvnorm待采样的正态分布
+# n采样样本数
+# dimension维度
+# x0为初值
+# steplen均匀分布步长
+# ...为提议分布的参数
+
+MH_sampling_unif &lt;- function(px_muvnorm,n,dimension,x0,steplen,...){
+    k = 0  # 统计接受次数
+    rnames &lt;- paste(&quot;n&quot;,1:n,sep = &quot;&quot;)
+    cnames &lt;- paste(&quot;x&quot;,1:dimension,sep = &quot;&quot;)
+    # 行为维度，列为样本
+    samples &lt;- matrix(0,nrow = n,ncol = dimension,dimnames = list(rnames,cnames))  
+    samples[1,] &lt;- x0  # 设置初值
+    verdict &lt;- runif(n)  # 用于判断的向量   
+    for (i in 1:(n-1)) {
+        x &lt;- samples[i,] # 获取当前状态
+        y &lt;- runif(dimension,-steplen,steplen)+x  # 生成提议分布样本
+        #print(x)
+        #print(i)
+        #str(samples)
+        A &lt;- min(1,px_muvnorm(y,...)/px_muvnorm(x,...))  # 接受概率
+        # 接受/拒绝样本
+        if(A&gt;verdict[i]){
+            samples[i+1,] &lt;-  y
+            k = k+1
+        }else{
+            samples[i+1,] &lt;-  samples[i,]
+        }
+              
+    }
+    #k/n
+    samples
+}</code></pre>
+<p>以一维正态分布做试探：</p>
+<pre class="r"><code>n &lt;- 20000
+x &lt;- MH_sampling_unif(px_muvnorm,n,1,0,1.5,0,diag(1))</code></pre>
+<p>收敛性判断，通过遍历均值判断</p>
+<pre class="r"><code>y &lt;- ergodic_mean_var(x)
+ggplot(tibble(x=1:n,y=y$ergodic_mean))+
+    geom_line(aes(x,y))+
+    labs(x=&quot;样本长度&quot;,y=&quot;遍历均值&quot;)</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-33-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;MH-ergodic-mean.pdf&quot;,width = 6.5,height = 3.5,path = main_path)</code></pre>
+<p>大概5000之后序列趋于平稳，可以认为马尔可夫链收敛了。</p>
+<pre class="r"><code>samples &lt;- x[-c(1:5000)]
+ggplot(tibble(samples=samples))+
+    geom_histogram(aes(x=samples,y=..density..),bins = 50)+
+    geom_function(fun=dnorm,aes(color=&quot;正确分布&quot;),size=1)+
+    labs(x=&quot;z&quot;,y=&quot;密度&quot;)</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-34-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;MH-hist.pdf&quot;,width = 6.5,height = 3.5,path = main_path)</code></pre>
+<p>大致符合，可以认为已经收敛到正确的分布。</p>
+<p>通过马尔可夫链采样得到的样本相邻之间具有很高的相关性，为了得到近似独立的样本，我们可以将样本按顺序均分为若干份，每份K个样本，然后在每份抽取1个样本使得它们近似独立。</p>
+<p>确定K值的一个办法，求K份样本均值间的acf，在<span class="math inline">\(\pm 2/\sqrt{n}\)</span>间可以认为它们是白噪声，近似没有相关性。</p>
+<pre class="r"><code># 求容量为K每份样本的均值
+# x样本向量
+# k每份样本容量
+# 不能整除的，剩余样本丢弃
+k_samples_mean &lt;- function(x,k){
+    l &lt;- length(x)
+    r &lt;- floor(l/k)  # 行数，份数
+    y &lt;- matrix(x[1:(k*r)],r,k,byrow = T)
+    m &lt;- apply(y, 1, mean)
+    m
+}</code></pre>
+<p>对上面得到的样本确定K值：</p>
+<pre class="r"><code>k &lt;- seq(10,100,10)
+acf1 &lt;- vector(&quot;double&quot;,length(k))
+mlen &lt;- vector(&quot;double&quot;,length(k))
+for (i in seq_along(k)) {
+    m &lt;- k_samples_mean(samples,k[[i]])
+    ac &lt;- acf(m,lag.max = 1,plot = FALSE)
+    acf1[[i]] &lt;- ac$acf[2]  # 1阶acf
+    mlen[[i]] &lt;- length(m)  # 均值向量长度
+}
+tb3 &lt;- tibble(k,acf1,mlen)
+tb3 %&gt;% 
+    mutate(mu=2/sqrt(mlen),md=-mu) %&gt;% # 置信上下界
+    mutate(acc=(acf1&gt;=md &amp; acf1&lt;=mu)) %&gt;% 
+    ggplot(aes(k,acf1))+
+    geom_segment(aes(xend=k,yend=0))+
+    geom_point(aes(k,mu,color=acc,shape=acc))+
+    geom_point(aes(k,md,color=acc,shape=acc))+
+    scale_x_continuous(breaks = k)+
+    labs(x=&quot;K值&quot;,y=&quot;样本间自相关系数&quot;)</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-36-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;MH-acf.pdf&quot;,width = 6.5,height = 3.5,path = main_path)</code></pre>
+<p>可以看到，可以取K=40，此时均值向量长度为375。</p>
+<p>下面考虑步长跟初始点对收敛速度的影响。</p>
+<p>先是步长对收敛速度的影响：</p>
+<pre class="r"><code>n &lt;- 20000  # 采样数
+steplen &lt;- seq(0.1,by = 0.5,length.out = 4)  # 步长
+#steplen &lt;- 0.5
+y &lt;- matrix(0,n,length(steplen))
+for (i in seq_along(steplen)) {
+    y[,i] &lt;- MH_sampling_unif(px_muvnorm,n,1,0,steplen[i],0,matrix(1,1,1))
+}
+x &lt;- apply(y, 2, accumulate,`+`)/(1:n)
+y &lt;- as_tibble(x)</code></pre>
+<pre><code>## Warning: The `x` argument of `as_tibble.matrix()` must have unique column names if `.name_repair` is omitted as of tibble 2.0.0.
+## Using compatibility `.name_repair`.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_warnings()` to see where this warning was generated.</code></pre>
+<pre class="r"><code>y %&gt;% 
+    rename(`0.1`=V1,`0.6`=V2,`1.1`=V3,`1.6`=V4) %&gt;% 
+    mutate(idx=1:n()) %&gt;% 
+    #dplyr::select(-`0.1`) %&gt;%
+    pivot_longer(cols = -idx, names_to=&quot;steplen&quot;, values_to=&quot;ergodic_mean&quot;)%&gt;%  
+    rename(`步长`=steplen) %&gt;% 
+    ggplot()+
+    geom_line(aes(idx,ergodic_mean,color=`步长`))+
+    facet_wrap(~`步长`,ncol = 2)+
+    labs(x=&quot;样本长度&quot;,y=&quot;遍历均值&quot;)</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-38-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;MH-steplen-mean.pdf&quot;,width = 6.5,height = 4.5,path = main_path)</code></pre>
+<p>可以看到，当步长较小时，遍历均值长时间不稳定，意味着长时间马尔可夫链都没有收敛，这是因为步长过小，遍历状态空间的形式是缓慢的随机游走状态。但是，如果步长太大，由接受率公式可以得到拒绝率会增大。</p>
+<p>步长与接受率的影响：</p>
+<pre class="r"><code># M-H算法，提议分布为均匀分布
+# px_muvnorm待采样的正态分布
+# n采样样本数
+# dimension维度
+# x0为初值
+# steplen均匀分布步长
+# ...为提议分布的参数
+
+MH_sampling_unif2 &lt;- function(px_muvnorm,n,dimension,x0,steplen,...){
+    k = 0  # 统计接受次数
+    rnames &lt;- paste(&quot;n&quot;,1:n,sep = &quot;&quot;)
+    cnames &lt;- paste(&quot;x&quot;,1:dimension,sep = &quot;&quot;)
+    # 行为维度，列为样本
+    samples &lt;- matrix(0,nrow = n,ncol = dimension,dimnames = list(rnames,cnames))  
+    samples[1,] &lt;- x0  # 设置初值
+    verdict &lt;- runif(n)  # 用于判断的向量   
+    for (i in 1:(n-1)) {
+        x &lt;- samples[i,] # 获取当前状态
+        y &lt;- runif(dimension,-steplen,steplen)+x  # 生成提议分布样本
+        #print(x)
+        #print(i)
+        #str(samples)
+        A &lt;- min(1,px_muvnorm(y,...)/px_muvnorm(x,...))  # 接受概率
+        # 接受/拒绝样本
+        if(A&gt;verdict[i]){
+            samples[i+1,] &lt;-  y
+            k = k+1
+        }else{
+            samples[i+1,] &lt;-  samples[i,]
+        }
+              
+    }
+    k/n
+    #samples
+}</code></pre>
+<pre class="r"><code>n &lt;- 20000  # 采样数
+steplen &lt;- seq(0.1,3.1,by = 0.5)  # 步长
+#steplen &lt;- 0.5
+y &lt;- vector(&quot;double&quot;,length(steplen))
+for (i in seq_along(steplen)) {
+    y[[i]] &lt;- MH_sampling_unif2(px_muvnorm,n,1,0,steplen[i],0,matrix(1,1,1))
+}</code></pre>
+<pre class="r"><code>ggplot(tibble(steplen,acc=y),aes(steplen,acc))+
+    geom_point()+
+    geom_line()+
+    scale_x_continuous(breaks = steplen)+
+    labs(x=&quot;步长&quot;,y=&quot;接受率&quot;)</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-41-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;MH-steplen-acc.pdf&quot;,width = 6.5,height = 3.5,path = main_path)</code></pre>
+<p>高斯分布的相关系数对收敛性的影响：</p>
+<pre class="r"><code>n &lt;- 20000  # 采样数
+r &lt;- seq(0,1,0.3)  # 相关系数
+steplen &lt;- 1.5 # 步长
+rnames &lt;- paste(&quot;n&quot;,1:n,sep = &quot;&quot;)
+cnames &lt;- str_c(r)
+mm &lt;- matrix(0,n,length(r),dimnames = list(rnames,cnames))
+y &lt;- matrix(0,n,2)
+for (i in seq_along(r)) {
+    y &lt;- MH_sampling_unif(px_muvnorm,n,2,c(0,0),steplen,c(0,0),
+                              matrix(c(1,r[[i]],r[[i]],1),2,2))
+    y &lt;- apply(y, 2, accumulate,`+`)/(1:n)
+    y &lt;- y^2
+    mm[,i] = sqrt(y[,1]+y[,2])
+}
+y &lt;- as_tibble(mm)</code></pre>
+<pre class="r"><code>y %&gt;% 
+    mutate(idx=1:n()) %&gt;% 
+    #dplyr::select(-`0.1`) %&gt;%
+    pivot_longer(cols = -idx, names_to=&quot;rho&quot;, values_to=&quot;ergodic_mean&quot;)%&gt;%  
+    rename(`相关系数`=rho) %&gt;% 
+    ggplot()+
+    geom_line(aes(idx,ergodic_mean,color=`相关系数`))+
+    facet_wrap(~`相关系数`,ncol = 2)+
+    labs(x=&quot;样本长度&quot;,y=&quot;遍历均值差&quot;)</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-43-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;MH-rho-mean.pdf&quot;,width = 6.5,height = 4.5,path = main_path)</code></pre>
+<p>维度对接受率的影响：</p>
+<pre class="r"><code>n &lt;- 20000  # 采样数
+dim &lt;- 1:15  # 维度
+steplen=1.5  # 步长
+y &lt;- vector(&quot;double&quot;,length(dim))
+for (i in seq_along(dim)) {
+    y[[i]] &lt;- MH_sampling_unif2(px_muvnorm,n,dimension = i,
+                                rep(0,i),steplen,rep(0,i),diag(i))
+}</code></pre>
+<pre class="r"><code>ggplot(tibble(dim,acc=y),aes(dim,acc))+
+    geom_point()+
+    geom_line()+
+    scale_x_continuous(breaks = dim)+
+    labs(x=&quot;维数&quot;,y=&quot;接受率&quot;)</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-45-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;MH-dim-acc.pdf&quot;,width = 6.5,height = 3.5,path = main_path)</code></pre>
+<p>下面对二维正态分布进行采样，取步长为1.5。</p>
+<pre class="r"><code>n &lt;- 20000  # 采样数
+r &lt;- 0.4  # 相关系数
+steplen &lt;- 1.5 # 步长
+samples &lt;- MH_sampling_unif(px_muvnorm,n,2,c(0,0),steplen,c(0,0),matrix(c(1,r,r,1),2,2))</code></pre>
+<p>得到真实的分布曲线：</p>
+<pre class="r"><code>x1 &lt;- seq(-3,3,length.out = 200)
+x2 &lt;- x1
+y1 &lt;- rep(x1,rep(length(x2),length(x1)))
+y2 &lt;- rep(x2,length(x1))
+tb2 &lt;- tibble(y1,y2)
+tb2[&quot;y&quot;] &lt;- apply(tb2,1,px_muvnorm,mu=c(0,0),sig = matrix(c(1,r,r,1),2,2))</code></pre>
+<p>比较一下：</p>
+<pre class="r"><code>n1 &lt;- 5000  # 剔除前面的样本数
+tb1 &lt;- as_tibble(samples[-c(1:n1),])
+tb1 %&gt;% 
+    ggplot(aes(x=x1,y=x2))+
+    geom_point(color=&quot;green3&quot;,alpha = 0.1,size=0.5)+
+    stat_density_2d(aes(color=&quot;sampling&quot;))+
+    geom_contour(aes(y1,y2,z=y,color=&quot;correct&quot;),data = tb2)+
+    scale_colour_manual(values = c(&quot;blue&quot;,&quot;red&quot;))</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-48-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>d = 9
+a &lt;- MH_sampling_unif(px_muvnorm,1000,d,rep(0,d),0.5,rep(0,d),diag(d))</code></pre>
+<p>大致一致，可以认为收敛到了正确的分布。</p>
+<p>下面对Gibbs采样进行编码实现，采样二维正态分布样本。</p>
+<p>Gibbs采样常用于采样后验分布，假设现在有后验分布<span class="math inline">\((\theta|y)\sim \mathcal{N}(y,\Sigma)\)</span>，</p>
+<p><span class="math display">\[
+\Sigma = \begin{bmatrix}
+        \sigma_1^2 &amp; \rho\sigma_1\sigma_2\\
+        \rho\sigma_1\sigma_2\ &amp; \sigma_2^2
+    \end{bmatrix}
+\]</span></p>
+<p>Gibbs采样要求在下面的条件分布中交替采样：</p>
+<p><span class="math display">\[
+    (\theta^t_1|\theta_2^{t-1},y)\sim\mathcal{N}\left(y_1+\rho \frac{\sigma_1}{\sigma_2}(\theta_2^{t-1}-y_2),\sigma_1^2(1-\rho^2)\right)
+\]</span>
+<span class="math display">\[
+    (\theta^t_2|\theta_1^{t},y)\sim\mathcal{N}\left(y_2+\rho \frac{\sigma_2}{\sigma_1}(\theta_1^{t}-y_1),\sigma_2^2(1-\rho^2)\right)
+\]</span></p>
+<p>下面给出采样二维高斯分布的Gibbs采样算法：</p>
+<pre class="r"><code># 二维高斯分布的Gibbs采样
+# mu 均值向量
+# sig 协方差阵
+# n 样本数
+# x0 初始值
+
+gibbs_sampling_norm2 &lt;- function(mu, sig, n, x0){
+    # 获取相应分量
+    a &lt;- sqrt(sig[1,1]) #sigma1
+    b &lt;- sqrt(sig[2,2]) #sigma2
+    rho &lt;- sig[1,2]/a/b
+    # 先定义样本矩阵
+    rnames &lt;- paste(&quot;n&quot;,1:n,sep = &quot;&quot;)
+    cnames &lt;- paste(&quot;x&quot;,1:2,sep = &quot;&quot;)
+    # 行为维度，列为样本
+    samples &lt;- matrix(0,nrow = n,ncol = 2,dimnames = list(rnames,cnames))  
+    samples[1,] = x0  # 初始化
+    for (i in 2:n) {
+        samples[i,1] &lt;- rnorm(1,mu[1]+rho*a*(samples[i-1,2]-mu[2])/b,
+                              a*sqrt(1-rho^2))
+        samples[i,2] &lt;- rnorm(1,mu[2]+rho*b*(samples[i,1]-mu[1])/a,
+                              b*sqrt(1-rho^2))
+    }
+    samples
+}</code></pre>
+<p>以<span class="math inline">\(y=[1,2],\Sigma=[1 ,-0.7;-0.7,2]\)</span>为例采样。</p>
+<pre class="r"><code>n &lt;- 10000 # 样本
+sig &lt;- matrix(c(1,-0.7,-0.7,2),2,2)  # 协方差阵
+mu=c(1,2)
+samples &lt;- gibbs_sampling_norm2(mu,sig=sig,n,c(0,0))</code></pre>
+<p>遍历均值差：</p>
+<pre class="r"><code>y &lt;- apply(samples, 2, accumulate,`+`)/(1:n)
+y[,1] = y[,1]-mu[1]
+y[,2] = y[,2]-mu[2]
+y &lt;- y^2
+mm = sqrt(y[,1]+y[,2])
+y &lt;- as_tibble(mm)</code></pre>
+<pre class="r"><code>y %&gt;% 
+    mutate(idx=1:n()) %&gt;% 
+    #dplyr::select(-`0.1`) %&gt;%
+    ggplot()+
+    geom_line(aes(idx,value))+
+    labs(x=&quot;样本长度&quot;,y=&quot;遍历均值差&quot;)</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-53-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;gibbs-mean.pdf&quot;,width = 6.5,height = 3.5,path = main_path)</code></pre>
+<p>得到真实的分布曲线：</p>
+<pre class="r"><code>x1 &lt;- seq(-2,3.5,length.out = 200)
+x2 &lt;- seq(-2,5,length.out = 200)
+y1 &lt;- rep(x1,rep(length(x2),length(x1)))
+y2 &lt;- rep(x2,length(x1))
+tb2 &lt;- tibble(y1,y2)
+tb2[&quot;y&quot;] &lt;- apply(tb2,1,px_muvnorm,mu=mu,sig=sig)</code></pre>
+<p>比较一下：</p>
+<pre class="r"><code>n1 &lt;- 2500  # 剔除前面的样本数
+tb1 &lt;- as_tibble(samples)
+tb1 %&gt;% 
+    mutate(idx = 1:n()) %&gt;% 
+    filter(idx&gt;n1) %&gt;% 
+    ggplot(aes(x=x1,y=x2))+
+    geom_point(aes(shape=&quot;采样样本点&quot;),color=&quot;green3&quot;,alpha = 0.3,size=0.5)+
+    stat_density_2d(aes(color=&quot;采样分布&quot;))+
+    geom_contour(aes(y1,y2,z=y,color=&quot;正确分布&quot;),
+                 data = tb2)+
+    scale_colour_manual(values = c(&quot;blue&quot;,&quot;red&quot;))+
+    labs(x=TeX(&quot;$\\theta_1$&quot;),y=TeX(&quot;$\\theta_2$&quot;))</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-55-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;gibbs-samples.pdf&quot;,width = 6.5,height = 3.5,path = main_path)
+
+    #stat_density_2d(aes(x=V1,y=V2,color=&quot;mass_sampling&quot;),as_tibble(y))</code></pre>
+<p>大致一致，可以认为gibbs采样得到了近似正确的分布，证明了算法的有效性。</p>
+<p>下面展示gibbs采样的随机游走路径：</p>
+<pre class="r"><code>x1 &lt;- rep(tb1$x1,rep(2,nrow(tb1)))
+x2 &lt;- rep(tb1$x2,rep(2,nrow(tb1)))
+x1 &lt;- x1[-1]
+x1[length(x1)+1] &lt;- x1[length(x1)]
+tb3 &lt;- tibble(x1,x2)
+
+n1 &lt;- 50  #选择的样本数
+tb3 %&gt;% 
+    mutate(idx=1:n()) %&gt;% 
+    filter(idx&lt;=n1) %&gt;% 
+    ggplot(aes(x1,x2))+
+    geom_path()+
+    geom_point(aes(x1[1],x2[1]),shape=15,size=3)+
+    labs(title = paste(&quot;n =&quot;,n1),x=TeX(&quot;$\\theta_1$&quot;),y=TeX(&quot;$\\theta_2$&quot;))</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-56-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;gibbs-path-1.pdf&quot;,width = 3.5,height = 4,path = main_path)
+
+n1 &lt;- 1000
+tb3 %&gt;% 
+    mutate(idx=1:n()) %&gt;% 
+    filter(idx&lt;=n1) %&gt;% 
+    ggplot(aes(x1,x2))+
+    geom_path()+
+    geom_point(aes(x1[1],x2[1]),shape=15,size=3)+
+    labs(title = paste(&quot;n =&quot;,n1),x=TeX(&quot;$\\theta_1$&quot;),y=TeX(&quot;$\\theta_2$&quot;))</code></pre>
+<p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-56-2.png" width="70%" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>    #ggsave(&quot;gibbs-path-2.pdf&quot;,width = 3.5,height = 4,path = main_path)</code></pre>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>## R version 3.6.3 (2020-02-29)
+## Platform: x86_64-w64-mingw32/x64 (64-bit)
+## Running under: Windows 10 x64 (build 18363)
+## 
+## Matrix products: default
+## 
+## locale:
+## [1] LC_COLLATE=Chinese (Simplified)_China.936 
+## [2] LC_CTYPE=Chinese (Simplified)_China.936   
+## [3] LC_MONETARY=Chinese (Simplified)_China.936
+## [4] LC_NUMERIC=C                              
+## [5] LC_TIME=Chinese (Simplified)_China.936    
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## other attached packages:
+##  [1] nloptr_1.2.1    Cairo_1.5-12.2  showtext_0.9-2  showtextdb_3.0 
+##  [5] sysfonts_0.8.3  latex2exp_0.5.0 MASS_7.3-51.5   forcats_0.5.0  
+##  [9] stringr_1.4.0   dplyr_1.0.2     purrr_0.3.4     readr_1.3.1    
+## [13] tidyr_1.1.1     tibble_3.0.3    ggplot2_3.3.2   tidyverse_1.3.0
+## [17] blogdown_0.19  
+## 
+## loaded via a namespace (and not attached):
+##  [1] tidyselect_1.1.0  xfun_0.18         haven_2.3.1       colorspace_1.4-1 
+##  [5] vctrs_0.3.2       generics_0.0.2    viridisLite_0.3.0 htmltools_0.4.0  
+##  [9] yaml_2.2.0        blob_1.2.0        rlang_0.4.7       isoband_0.2.2    
+## [13] pillar_1.4.6      glue_1.4.1        withr_2.1.2       DBI_1.0.0        
+## [17] dbplyr_1.4.4      modelr_0.1.8      readxl_1.3.1      lifecycle_0.2.0  
+## [21] munsell_0.5.0     gtable_0.3.0      cellranger_1.1.0  rvest_0.3.6      
+## [25] evaluate_0.14     labeling_0.3      knitr_1.28        broom_0.7.0      
+## [29] Rcpp_1.0.3        scales_1.0.0      backports_1.1.4   jsonlite_1.7.2   
+## [33] fs_1.3.1          hms_0.5.3         digest_0.6.20     stringi_1.4.3    
+## [37] bookdown_0.21     grid_3.6.3        cli_1.1.0         tools_3.6.3      
+## [41] magrittr_1.5      crayon_1.3.4      pkgconfig_2.0.3   ellipsis_0.3.0   
+## [45] xml2_1.3.2        reprex_0.3.0      lubridate_1.7.9   assertthat_0.2.1 
+## [49] rmarkdown_2.7     httr_1.4.2        rstudioapi_0.10   R6_2.4.0         
+## [53] compiler_3.6.3</code></pre>
+</div>
+</div>
