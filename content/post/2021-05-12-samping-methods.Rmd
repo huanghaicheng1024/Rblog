@@ -9,6 +9,10 @@ tags:
   - R
 ---
 
+# 前言的前言
+
+本文是毕业设计的实验源代码，由于是在实验中所即时记录的报告，故杂乱无章，待修正。
+
 # 前言
 
 利用R实现一些采样方法，分析各个方法的一些特点。
@@ -260,7 +264,7 @@ importance_sampling_norm(px,n,f=(function(x){x}),mu,s)
 
 举个例子，当提议分布与待采样分布相差甚远时（取正态分布N(5,1)与Beta(2,5)）:
 
-```{r}
+```{r fig.asp = 1,fig.width=4}
 x <- seq(-1,10,0.1)
 plot(x,dnorm(x,5,1)/4,col="red","l",ylab="未归一化密度函数")
 lines(x,px(x))
@@ -483,7 +487,7 @@ ggplot(tibble(dimension=dimension,acc=out2),aes(dimension,acc))+
 
 可以看到，随着维度的升高，接受率几乎呈指数下降，所以在高维空间里。拒绝采样并不是一个适用的方法。原因很简单，当维度升高，那些边边角角拒绝样本的地方会越来越大的，用n维正方体包含内接n维球做例子，我们看看它们体积比的变化：
 
-```{r}
+```{r fig.asp = 1,fig.width=4}
 # 取半径为1，这个不影响比例
 d <- 1:50
 x <- pi^(d/2)/gamma(d/2+1)  # d维球体积
@@ -945,6 +949,8 @@ tb3 %>%
     #ggsave("gibbs-path-2.pdf",width = 3.5,height = 4,path = main_path)
 ```
 
+
+最后附上系统运行环境：
 ```{r}
 sessionInfo()
 ```
