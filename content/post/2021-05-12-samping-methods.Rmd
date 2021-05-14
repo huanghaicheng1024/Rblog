@@ -29,7 +29,7 @@ set.seed(1024)
 knitr::opts_chunk$set(
   out.width = "70%",
   fig.align = 'center',
-  fig.width = 6,
+  fig.width = 4,
   fig.asp = 0.618  # 1 / phi
 )
 ```
@@ -376,7 +376,7 @@ tb1 %>%
 
 
 ```{r}
-L = seq(1000,3000,by = 500)
+L = seq(400,1000,by = 200)
 tb1 <- tibble(L=L,mean=mu,sd=s)
 samples <- pmap(tb1,SIR_norm,px=px) %>% unlist
 L1 = rep(L,L)
@@ -388,11 +388,11 @@ tb2 <- tibble(L=L1,samples=samples)
 ```{r}
 tb2%>% 
     ggplot(aes(x=samples,y=..density..))+
-    geom_density(aes(color=L))+
+    geom_density(aes(color="采样分布"))+
     geom_line(aes(x=x,y=y,color="正确分布"),data=p,linetype=5,size=1)+
-    labs(x="z",y="密度")
-    #ggsave("SIR-samples-Ls.pdf",width = 4,height = 3.5,path = main_path)
-
+    labs(x="z",y="密度")+
+    facet_wrap(~L)
+    #ggsave("SIR-samples-Ls.pdf",width = 6.5,height = 4.5,path = main_path)
 ```
 
 

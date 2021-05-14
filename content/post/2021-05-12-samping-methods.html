@@ -27,7 +27,7 @@ set.seed(1024)</code></pre>
 <pre class="r"><code>knitr::opts_chunk$set(
   out.width = &quot;70%&quot;,
   fig.align = &#39;center&#39;,
-  fig.width = 6,
+  fig.width = 4,
   fig.asp = 0.618  # 1 / phi
 )</code></pre>
 <pre class="r"><code># 设置ggplot的主题
@@ -296,7 +296,7 @@ tb1 %&gt;%
     labs(x=&quot;样本长度&quot;,y=NULL)</code></pre>
 <p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-23-1.png" width="70%" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>    #ggsave(&quot;SIR-samples_len.pdf&quot;,width = 5.5,height = 3,path = main_path)</code></pre>
-<pre class="r"><code>L = seq(1000,3000,by = 500)
+<pre class="r"><code>L = seq(400,1000,by = 200)
 tb1 &lt;- tibble(L=L,mean=mu,sd=s)
 samples &lt;- pmap(tb1,SIR_norm,px=px) %&gt;% unlist
 L1 = rep(L,L)
@@ -304,11 +304,12 @@ L1 &lt;- factor(L1,levels = as.character(L),ordered=TRUE)
 tb2 &lt;- tibble(L=L1,samples=samples)</code></pre>
 <pre class="r"><code>tb2%&gt;% 
     ggplot(aes(x=samples,y=..density..))+
-    geom_density(aes(color=L))+
+    geom_density(aes(color=&quot;采样分布&quot;))+
     geom_line(aes(x=x,y=y,color=&quot;正确分布&quot;),data=p,linetype=5,size=1)+
-    labs(x=&quot;z&quot;,y=&quot;密度&quot;)</code></pre>
+    labs(x=&quot;z&quot;,y=&quot;密度&quot;)+
+    facet_wrap(~L)</code></pre>
 <p><img src="/post/2021-05-12-samping-methods_files/figure-html/unnamed-chunk-25-1.png" width="70%" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>    #ggsave(&quot;SIR-samples-Ls.pdf&quot;,width = 4,height = 3.5,path = main_path)</code></pre>
+<pre class="r"><code>    #ggsave(&quot;SIR-samples-Ls.pdf&quot;,width = 6.5,height = 4.5,path = main_path)</code></pre>
 </div>
 <div id="高维分布的局限性" class="section level2">
 <h2>高维分布的局限性</h2>
@@ -354,7 +355,7 @@ x &lt;- seq(-5,5,0.01)
 tb1 &lt;- tibble(x=x,y=dnorm(x))
 out1 &lt;- highdim_sampling_unif(px_muvnorm,n,1,-4,4)
 out1$acc</code></pre>
-<pre><code>## [1] 0.3065</code></pre>
+<pre><code>## [1] 0.3128</code></pre>
 <pre class="r"><code>out1$samples %&gt;% 
     ggplot()+
     geom_histogram(aes(x=x1,y=..density..),bins = 100,color=&quot;white&quot;)+
@@ -761,19 +762,18 @@ tb3 %&gt;%
 ## [17] blogdown_0.19  
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] tidyselect_1.1.0  xfun_0.18         haven_2.3.1       colorspace_1.4-1 
-##  [5] vctrs_0.3.2       generics_0.0.2    viridisLite_0.3.0 htmltools_0.4.0  
-##  [9] yaml_2.2.0        blob_1.2.0        rlang_0.4.7       isoband_0.2.2    
-## [13] pillar_1.4.6      glue_1.4.1        withr_2.1.2       DBI_1.0.0        
-## [17] dbplyr_1.4.4      modelr_0.1.8      readxl_1.3.1      lifecycle_0.2.0  
-## [21] munsell_0.5.0     gtable_0.3.0      cellranger_1.1.0  rvest_0.3.6      
-## [25] evaluate_0.14     labeling_0.3      knitr_1.28        broom_0.7.0      
-## [29] Rcpp_1.0.3        scales_1.0.0      backports_1.1.4   jsonlite_1.7.2   
-## [33] fs_1.3.1          hms_0.5.3         digest_0.6.20     stringi_1.4.3    
-## [37] bookdown_0.21     grid_3.6.3        cli_1.1.0         tools_3.6.3      
-## [41] magrittr_1.5      crayon_1.3.4      pkgconfig_2.0.3   ellipsis_0.3.0   
-## [45] xml2_1.3.2        reprex_0.3.0      lubridate_1.7.9   assertthat_0.2.1 
-## [49] rmarkdown_2.7     httr_1.4.2        rstudioapi_0.10   R6_2.4.0         
-## [53] compiler_3.6.3</code></pre>
+##  [1] tidyselect_1.1.0 xfun_0.18        haven_2.3.1      colorspace_1.4-1
+##  [5] vctrs_0.3.2      generics_0.0.2   htmltools_0.4.0  yaml_2.2.0      
+##  [9] blob_1.2.0       rlang_0.4.7      isoband_0.2.2    pillar_1.4.6    
+## [13] glue_1.4.1       withr_2.1.2      DBI_1.0.0        dbplyr_1.4.4    
+## [17] modelr_0.1.8     readxl_1.3.1     lifecycle_0.2.0  munsell_0.5.0   
+## [21] gtable_0.3.0     cellranger_1.1.0 rvest_0.3.6      evaluate_0.14   
+## [25] labeling_0.3     knitr_1.28       broom_0.7.0      Rcpp_1.0.3      
+## [29] scales_1.0.0     backports_1.1.4  jsonlite_1.7.2   fs_1.3.1        
+## [33] hms_0.5.3        digest_0.6.20    stringi_1.4.3    bookdown_0.21   
+## [37] grid_3.6.3       cli_1.1.0        tools_3.6.3      magrittr_1.5    
+## [41] crayon_1.3.4     pkgconfig_2.0.3  ellipsis_0.3.0   xml2_1.3.2      
+## [45] reprex_0.3.0     lubridate_1.7.9  assertthat_0.2.1 rmarkdown_2.7   
+## [49] httr_1.4.2       rstudioapi_0.10  R6_2.4.0         compiler_3.6.3</code></pre>
 </div>
 </div>
