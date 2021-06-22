@@ -11,5 +11,7 @@ Some notebooks:
 
 - [时间序列分析R/TSA in R](https://huanghaicheng1024.github.io/TSA-in-R/index.html)
 
+- [应用非参数统计](https://huanghaicheng1024.github.io/applied-nonparametric-statistics/index.html)
+
 - ...
 
