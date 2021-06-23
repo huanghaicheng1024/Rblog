@@ -1,6 +1,6 @@
-baseurl = "https://hhcheng.netlify.app/"
+baseurl = "https://hhcheng.vercel.app/"
 languageCode = "zh-cn"
-title = "Rblog|Huang's personal blog"
+title = "Rblog | Huang's personal blog"
 theme = "hugo-lithium"
 googleAnalytics = ""
 disqusShortname = ""
@@ -41,7 +41,7 @@ enableEmoji = true
     description = "A website built through Hugo and blogdown.A blog website of Huang"
 
     # options for highlight.js (version, additional languages, and theme)
-    highlightjsVersion = "10.0.3"
+    highlightjsVersion = "11.0.1"
     highlightjsCDN = "//cdnjs.cloudflare.com/ajax/libs"
     highlightjsLang = ["r", "yaml" ,"css"]
     highlightjsTheme = "github"
