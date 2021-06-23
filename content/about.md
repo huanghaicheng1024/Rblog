@@ -14,6 +14,10 @@ disable_comments: true
 
 部署在Github + Netlify上。
 
+2021-6-23
+
+部署在vercel上。
+
 ## 关于我
 
 关于我？一条很菜却还有一点点理想的咸鱼，喜欢胡思乱想却懒于记录。
