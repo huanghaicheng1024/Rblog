@@ -13,5 +13,7 @@ Some notebooks:
 
 - [应用非参数统计](https://huanghaicheng1024.github.io/applied-nonparametric-statistics/index.html)
 
+- [统计计算](https://huanghaicheng1024.github.io/statcomp/index.html)
+
 - ...
 
