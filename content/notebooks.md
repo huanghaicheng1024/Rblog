@@ -15,5 +15,7 @@ Some notebooks:
 
 - [统计计算](https://huanghaicheng1024.github.io/statcomp/index.html)
 
+- [线性模型引论](/pdf/线性模型引论.pdf)
+
 - ...
 
