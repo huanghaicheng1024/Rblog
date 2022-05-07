@@ -17,5 +17,7 @@ Some notebooks:
 
 - [线性模型引论](/pdf/线性模型引论.pdf)
 
+- [Advanced R 学习笔记](https://adv-r-notes.vercel.app/)
+
 - ...
 
