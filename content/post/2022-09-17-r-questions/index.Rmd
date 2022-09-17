@@ -1,0 +1,16 @@
+---
+title: R questions
+author: Huang
+date: '2022-09-17'
+slug: r-questions
+categories: []
+tags:
+  - R
+---
+
+收集一些平时使用R遇到的问题.
+
+- `readxl::read_xlsx`函数读取`date`列时转换的是`datetime`类型，所以如果需要的是`date`类型得转换一下再使用，不然得注意一下`datetime`类型的时区问题。
+
+案例：需要读取外部文件，算了。。
+
