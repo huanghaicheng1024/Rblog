@@ -1,3 +1,3 @@
 # Rblog
-The personal blog with blogdown+GitHub+hugo+vercel.
+The personal blog with blogdown+GitHub+hugo+vercel/netlify.
 
